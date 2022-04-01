@@ -2,7 +2,7 @@ use crate::game::{Input, Output};
 
 pub fn solve(input: &Input) -> Output {
     let mut solution_attempt = Vec::new();
-    for _ in 0..input.num_boxes {
+    for _ in 0..input.num_cells {
         solution_attempt.push(1);
     }
 

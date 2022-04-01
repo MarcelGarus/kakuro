@@ -1,7 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
 pub type Value = u8;
-pub enum Box {
+pub enum Cell {
     Wall {
         vertical_sum: Option<Value>,
         horizontal_sum: Option<Value>,
@@ -9,7 +9,7 @@ pub enum Box {
     Empty,
 }
 pub struct Board {
-    pub boxes: Vec<Vec<Box>>, // Outer is vertical, inner horizontal.
+    pub cells: Vec<Vec<Cell>>, // Outer is vertical, inner horizontal.
 }
 
 pub trait ParseBoard {
@@ -17,16 +17,16 @@ pub trait ParseBoard {
 }
 impl ParseBoard for str {
     fn parse_board(&self) -> Board {
-        let boxes = self
+        let cells = self
             .lines()
             .map(|line| {
                 line.split(' ')
                     .filter(|word| !word.is_empty())
                     .map(|word| {
                         if word.chars().all(|c| c == '_') {
-                            Box::Empty
+                            Cell::Empty
                         } else if word.chars().all(|c| c == 'W') {
-                            Box::Wall {
+                            Cell::Wall {
                                 horizontal_sum: None,
                                 vertical_sum: None,
                             }
@@ -46,9 +46,9 @@ impl ParseBoard for str {
                             }
                             let parts = word.split('\\').collect::<Vec<_>>();
                             if parts.len() != 2 {
-                                panic!("Unknown box {:?}!", word);
+                                panic!("Unknown cell {:?}!", word);
                             }
-                            Box::Wall {
+                            Cell::Wall {
                                 vertical_sum: parse_sum(parts[0]),
                                 horizontal_sum: parse_sum(parts[1]),
                             }
@@ -57,15 +57,15 @@ impl ParseBoard for str {
                     .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
-        Board { boxes }
+        Board { cells }
     }
 }
 
-impl Display for Box {
+impl Display for Cell {
     // Always 5 chars.
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Box::Wall {
+            Cell::Wall {
                 vertical_sum,
                 horizontal_sum,
             } => match (vertical_sum, horizontal_sum) {
@@ -80,16 +80,16 @@ impl Display for Box {
                     write!(f, "{:>2}/{:2}", fmt_sum(vertical), fmt_sum(horizontal))
                 }
             },
-            Box::Empty => "_____".fmt(f),
+            Cell::Empty => "_____".fmt(f),
         }
     }
 }
 impl Display for Board {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let num_lines = self.boxes.len();
-        for (i, line) in self.boxes.iter().enumerate() {
-            for b in line {
-                b.fmt(f)?;
+        let num_lines = self.cells.len();
+        for (i, line) in self.cells.iter().enumerate() {
+            for cell in line {
+                cell.fmt(f)?;
                 ' '.fmt(f)?;
             }
             if i < num_lines - 1 {
