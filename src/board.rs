@@ -25,23 +25,16 @@ impl ParseBoard for str {
                     .map(|word| {
                         if word.chars().all(|c| c == '_') {
                             Cell::Empty
-                        } else if word.chars().all(|c| c == 'W') {
-                            Cell::Wall {
-                                horizontal_sum: None,
-                                vertical_sum: None,
-                            }
                         } else {
                             fn parse_sum(sum_str: &str) -> Option<Value> {
-                                let sum: Result<Value, _> = sum_str.parse();
-                                match sum {
-                                    Ok(sum) => Some(sum),
-                                    Err(_) => {
-                                        if sum_str == "W" {
-                                            None
-                                        } else {
-                                            panic!("Invalid sum {:?}.", sum_str);
-                                        }
-                                    }
+                                if sum_str.is_empty() {
+                                    None
+                                } else {
+                                    Some(
+                                        sum_str
+                                            .parse()
+                                            .expect(&format!("Invalid sum {:?}.", sum_str)),
+                                    )
                                 }
                             }
                             let parts = word.split('\\').collect::<Vec<_>>();
@@ -69,11 +62,10 @@ impl Display for Cell {
                 vertical_sum,
                 horizontal_sum,
             } => match (vertical_sum, horizontal_sum) {
-                (None, None) => "WWWWW".fmt(f),
                 (vertical, horizontal) => {
                     fn fmt_sum(s: &Option<Value>) -> String {
                         match s {
-                            None => "W".to_string(),
+                            None => "".to_string(),
                             Some(s) => format!("{}", s),
                         }
                     }
