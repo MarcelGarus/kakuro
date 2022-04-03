@@ -5,7 +5,10 @@ use crate::game::{Input, Output, Solution, Value};
 type Game = Vec<Cell>;
 type Cell = Option<Value>;
 
-impl Input {
+trait InputExt {
+    fn is_possible_solution(&self, attempt: &Game) -> bool;
+}
+impl InputExt for Input {
     fn is_possible_solution(&self, attempt: &Game) -> bool {
         for constraint in self.constraints.iter() {
             let cell_values = constraint
@@ -45,18 +48,18 @@ pub fn solve(input: &Input) -> Output {
 }
 
 fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
-    println!(
-        "Evaluating attempt {}",
-        attempt
-            .iter()
-            .map(|cell| {
-                match cell {
-                    Some(number) => format!("{}", number),
-                    None => "-".to_string(),
-                }
-            })
-            .collect::<String>()
-    );
+    // println!(
+    //     "Evaluating attempt {}",
+    //     attempt
+    //         .iter()
+    //         .map(|cell| {
+    //             match cell {
+    //                 Some(number) => format!("{}", number),
+    //                 None => "-".to_string(),
+    //             }
+    //         })
+    //         .collect::<String>()
+    // );
     if !input.is_possible_solution(attempt) {
         return;
     }

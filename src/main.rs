@@ -17,7 +17,6 @@ fn main() {
     println!("Abstracted to this:");
     println!("{}", input);
     println!();
-    return;
     println!("Solving.");
     let solutions = solvers::gradual::solve(&input);
     println!("Done.");
