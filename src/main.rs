@@ -1,6 +1,5 @@
-mod game;
-// mod solver;
 mod board;
+mod game;
 mod solvers;
 
 use crate::board::*;
@@ -16,10 +15,11 @@ fn main() {
     println!();
     let input = input.to_input();
     println!("Abstracted to this:");
-    println!("{:?}", input);
+    println!("{}", input);
     println!();
+    return;
     println!("Solving.");
-    let solutions = solvers::naive::solve(&input);
+    let solutions = solvers::gradual::solve(&input);
     println!("Done.");
     println!("Solutions:");
     println!("{:#?}", solutions);
