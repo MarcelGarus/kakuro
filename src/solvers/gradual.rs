@@ -36,30 +36,25 @@ impl InputExt for Input {
 }
 
 pub fn solve(input: &Input) -> Output {
-    let mut attempt: Game = Vec::new();
-    for _ in 0..input.num_cells {
-        attempt.push(None);
-    }
-
+    let mut attempt: Game = vec![None; input.num_cells];
     let mut solutions = vec![];
     solve_rec(input, &mut attempt, &mut solutions);
-
     solutions
 }
 
 fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
-    // println!(
-    //     "Evaluating attempt {}",
-    //     attempt
-    //         .iter()
-    //         .map(|cell| {
-    //             match cell {
-    //                 Some(number) => format!("{}", number),
-    //                 None => "-".to_string(),
-    //             }
-    //         })
-    //         .collect::<String>()
-    // );
+    println!(
+        "Evaluating attempt {}",
+        attempt
+            .iter()
+            .map(|cell| {
+                match cell {
+                    Some(number) => format!("{}", number),
+                    None => "-".to_string(),
+                }
+            })
+            .collect::<String>()
+    );
     if !input.is_possible_solution(attempt) {
         return;
     }

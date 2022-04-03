@@ -46,14 +46,9 @@ impl Input {
 }
 
 pub fn solve(input: &Input) -> Output {
-    let mut attempt = vec![];
-    for _ in 0..input.num_cells {
-        attempt.push(None);
-    }
-
+    let mut attempt = vec![None; input.num_cells];
     let mut solutions = vec![];
     solve_rec(input, &mut attempt, &mut solutions);
-
     solutions
 }
 
