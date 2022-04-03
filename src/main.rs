@@ -10,16 +10,23 @@ fn main() {
     let input = args()
         .nth(2)
         .expect("Give the input file as the second argument.");
+
+    println!("Reading from file.");
     let input = fs::read(input).expect("Couldn't read from input file.");
     let input = String::from_utf8(input).expect("File contains non-utf8 chars.");
+    println!("Done.");
+    println!();
+
     let input = input.parse_board();
     println!("Whole board:");
     println!("{}", input);
     println!();
+
     let input = input.to_input();
     println!("Abstracted to this:");
     println!("{}", input);
     println!();
+
     println!("Solving.");
     let solutions: Vec<Vec<u8>> = match solver.as_str() {
         "naive" => solvers::naive::solve(&input),
@@ -28,14 +35,24 @@ fn main() {
         _ => panic!("Unknown solver {}.", solver),
     };
     println!("Done.");
-    println!("Solutions:");
+    println!();
+
+    if solutions.len() == 1 {
+        println!("Solution:");
+    } else {
+        println!("Solutions:");
+    }
     for solution in solutions {
-        println!(
+        print!(
             "{}",
             solution
                 .iter()
                 .map(|number| format!("{}", number))
                 .collect::<String>()
         );
+        if !input.is_solution(&solution) {
+            print!(" (invalid)");
+        }
+        println!();
     }
 }
