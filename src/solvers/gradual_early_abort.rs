@@ -10,13 +10,11 @@ type Cell = Option<Value>;
 impl Input {
     fn is_possible_solution(&self, attempt: &Game) -> bool {
         for constraint in self.constraints.iter() {
-            //dbg!(&constraint);
             let cells = constraint
                 .cells
                 .iter()
                 .map(|b| attempt[*b])
                 .collect::<Vec<_>>();
-            //dbg!(&cells);
             let numbers = cells.into_iter().filter_map(|it| it).collect::<Vec<_>>();
 
             if numbers.iter().collect::<HashSet<_>>().len() < numbers.len() {
@@ -48,16 +46,6 @@ impl Input {
 }
 
 pub fn solve(input: &Input) -> Output {
-    // let mut attempt: Game = vec![4, 1, 2, 5, 9, 2, 4, 3, 2, 1]
-    //     .into_iter()
-    //     .map(|it| Some(it))
-    //     .collect::<Vec<_>>();
-    // while attempt.len() < input.num_cells {
-    //     attempt.push(None);
-    // }
-
-    // //dbg!(input.is_possible_solution(&attempt));
-
     let mut attempt = vec![];
     for _ in 0..input.num_cells {
         attempt.push(None);
