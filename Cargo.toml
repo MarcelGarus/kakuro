@@ -7,3 +7,4 @@ edition = "2018"
 debug = true
 
 [dependencies]
+itertools = "0.7.8"

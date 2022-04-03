@@ -18,8 +18,16 @@ fn main() {
     println!("{}", input);
     println!();
     println!("Solving.");
-    let solutions = solvers::gradual::solve(&input);
+    let solutions: Vec<Vec<u8>> = solvers::gradual_early_abort::solve(&input);
     println!("Done.");
     println!("Solutions:");
-    println!("{:#?}", solutions);
+    for solution in solutions {
+        println!(
+            "{}",
+            solution
+                .iter()
+                .map(|number| format!("{}", number))
+                .collect::<String>()
+        );
+    }
 }
