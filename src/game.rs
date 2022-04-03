@@ -1,5 +1,14 @@
-use crate::board::{Board, Cell, Value};
-use std::collections::{HashMap, HashSet};
+//! A game is a more abstracted version of a board. The concrete arrangements of
+//! cells on a 2D grid doesn't matter. Instead, it only contains constraints
+//! that are imposed on subsets of the cells.
+
+use crate::board::{self, Board, Cell};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::{self, Display, Formatter},
+};
+
+pub type Value = board::Value;
 
 #[derive(Debug)]
 pub struct Constraint {
@@ -13,8 +22,28 @@ pub struct Input {
     pub constraints: Vec<Constraint>,
 }
 
-type Solution = Vec<Value>;
+pub type Solution = Vec<Value>;
 pub type Output = Vec<Solution>;
+
+impl Display for Input {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{} cells", self.num_cells)?;
+        for (i, constraint) in self.constraints.iter().enumerate() {
+            write!(
+                f,
+                "{} should be sum from {:?}{}",
+                constraint.sum,
+                constraint.cells,
+                if i == self.constraints.len() - 1 {
+                    ""
+                } else {
+                    "\n"
+                },
+            )?;
+        }
+        Ok(())
+    }
+}
 
 impl Board {
     pub fn to_input(&self) -> Input {
@@ -98,7 +127,7 @@ impl Input {
                 .map(|b| attempt[*b])
                 .collect::<HashSet<_>>();
             if cell_values.len() < constraint.cells.len() {
-                return false;
+                return false; // A number appears twice.
             }
             let sum = cell_values.into_iter().reduce(|a, b| a + b).unwrap();
             if sum != constraint.sum {
@@ -108,7 +137,3 @@ impl Input {
         return true;
     }
 }
-
-// . 1 9
-// 3 _ _
-// . . _

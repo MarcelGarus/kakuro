@@ -1,3 +1,6 @@
+//! This module contains the definition of a board. This corresponds to a 2D
+//! layout of cells, just like you would see them on paper.
+
 use std::fmt::{self, Display, Formatter};
 
 pub type Value = u8;
