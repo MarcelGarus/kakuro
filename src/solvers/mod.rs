@@ -10,7 +10,12 @@
 //!   reached any longer. For example, if there's a constraint with the sum for
 //!   the cells 4 _ 9, then the partially filled out game is already considered
 //!   invalid.
+//! - prioritize: Like early_abort, but doesn't just fill the cells in the
+//!   arbitrary order that they were numbered in. Instead, it fills the first
+//!   cell and then cells in rows and columns that already contain numbers.
+//! - divide:
 
 pub mod early_abort;
 pub mod gradual;
 pub mod naive;
+pub mod prioritize;

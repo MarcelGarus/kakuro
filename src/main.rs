@@ -31,7 +31,8 @@ fn main() {
     let solutions: Vec<Vec<u8>> = match solver.as_str() {
         "naive" => solvers::naive::solve(&input),
         "gradual" => solvers::gradual::solve(&input),
-        "early-abort" => solvers::early_abort::solve(&input),
+        "early_abort" => solvers::early_abort::solve(&input),
+        "prioritize" => solvers::prioritize::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     };
     println!("Done.");

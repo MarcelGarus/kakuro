@@ -83,10 +83,15 @@ impl Board {
                     cells.push(mapping[&(x, y)]);
                     x += 1;
                 }
-                constraints.push(Constraint {
-                    sum: h,
-                    cells: cells,
-                });
+                if cells.is_empty() {
+                    panic!(
+                        "Constraint with sum {} starting at {}, {} has no cells.",
+                        h,
+                        x - 1,
+                        y
+                    );
+                }
+                constraints.push(Constraint { sum: h, cells });
             }
             if let Some(v) = vertical {
                 let mut cells = vec![];
@@ -98,10 +103,15 @@ impl Board {
                     cells.push(mapping[&(x, y)]);
                     y += 1;
                 }
-                constraints.push(Constraint {
-                    sum: v,
-                    cells: cells,
-                });
+                if cells.is_empty() {
+                    panic!(
+                        "Constraint with sum {} starting at {}, {} has no cells.",
+                        v,
+                        x,
+                        y - 1
+                    );
+                }
+                constraints.push(Constraint { sum: v, cells });
             }
         }
 
