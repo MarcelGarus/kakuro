@@ -13,8 +13,15 @@
 //! - prioritize: Like early_abort, but doesn't just fill the cells in the
 //!   arbitrary order that they were numbered in. Instead, it fills the first
 //!   cell and then cells in rows and columns that already contain numbers.
-//! - divide:
+//! - divide: On a large board, it doesn't make sense to even attempt to look at
+//!   all combinations. Instead, this solver divides a big Kakuro into two
+//!   smaller ones that are only connected with few constraints. For those
+//!   smaller games, all constraints still apply, except those spanning both.
+//!   Both smaller Kakuros are solved in isolation and the product of both
+//!   result sets is filtered to the solutions also fulfilling the connecting
+//!   constraints.
 
+pub mod divide;
 pub mod early_abort;
 pub mod gradual;
 pub mod naive;

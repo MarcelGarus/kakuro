@@ -10,7 +10,7 @@ use std::{
 
 pub type Value = board::Value;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Constraint {
     pub cells: Vec<usize>,
     pub sum: Value,
