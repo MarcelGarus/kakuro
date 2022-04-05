@@ -80,46 +80,38 @@ fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
         context,
         white_solutions.len() * black_solutions.len()
     );
-    let mut white_solutions_by_sums = HashMap::new();
+    let mut white_solutions_by_connection_cells = HashMap::new();
     for solution in white_solutions {
-        let key: Vec<Value> = splitted
+        let key = splitted
             .connections
             .iter()
-            .map(|constraint| Constraint {
-                cells: constraint
+            .map(|constraint| {
+                constraint
                     .cells
                     .iter()
                     .filter(|cell| splitted.colors[**cell] == Color::White)
-                    .map(|cell| mapping[*cell])
-                    .collect(),
-                sum: constraint.sum,
+                    .map(|cell| solution[mapping[*cell]])
+                    .collect_vec()
             })
-            .collect_vec()
-            .iter()
-            .map(|constraint| constraint.cells.iter().map(|i| solution[*i]).sum())
             .collect_vec();
-        white_solutions_by_sums
+        white_solutions_by_connection_cells
             .entry(key)
             .or_insert_with_key(|_| vec![])
             .push(solution);
     }
     let mut black_solutions_by_sums = HashMap::new();
     for solution in black_solutions {
-        let key: Vec<Value> = splitted
+        let key = splitted
             .connections
             .iter()
-            .map(|constraint| Constraint {
-                cells: constraint
+            .map(|constraint| {
+                constraint
                     .cells
                     .iter()
                     .filter(|cell| splitted.colors[**cell] == Color::Black)
-                    .map(|cell| mapping[*cell])
-                    .collect(),
-                sum: constraint.sum,
+                    .map(|cell| solution[mapping[*cell]])
+                    .collect_vec()
             })
-            .collect_vec()
-            .iter()
-            .map(|constraint| constraint.cells.iter().map(|i| solution[*i]).sum())
             .collect_vec();
         black_solutions_by_sums
             .entry(key)
@@ -127,19 +119,25 @@ fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
             .push(solution);
     }
     let mut solutions = vec![];
-    for (white_sums, white_solutions) in &white_solutions_by_sums {
-        'solutions: for (black_sums, black_solutions) in &black_solutions_by_sums {
-            for (outer_constraint_index, constraint) in splitted.connections.iter().enumerate() {
-                let sum = white_sums[outer_constraint_index] + black_sums[outer_constraint_index];
-                if constraint.sum != sum {
+    for (white_connecting_values, white_solutions) in &white_solutions_by_connection_cells {
+        'solutions: for (black_connecting_values, black_solutions) in &black_solutions_by_sums {
+            for ((white, black), constraint) in white_connecting_values
+                .iter()
+                .zip(black_connecting_values)
+                .zip(splitted.connections.iter())
+            {
+                let mut values = vec![];
+                values.append(&mut white.clone());
+                values.append(&mut black.clone());
+                if !do_values_satisfy_sum(&values, constraint.sum) {
                     continue 'solutions;
                 }
             }
             println!(
                 "{}  Combining white {:?} and black {:?} works and yields {}x{} = {} candidates.",
                 context,
-                white_sums,
-                black_sums,
+                white_connecting_values,
+                black_connecting_values,
                 white_solutions.len(),
                 black_solutions.len(),
                 white_solutions.len() * black_solutions.len()
@@ -163,6 +161,17 @@ fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
 
     println!("{}Done. Found {} solutions.", context, solutions.len());
     solutions
+}
+
+fn do_values_satisfy_sum(values: &[Value], sum: Value) -> bool {
+    for (i, a) in values.iter().enumerate() {
+        for (j, b) in values.iter().enumerate() {
+            if a == b && i != j {
+                return false; // Duplicate value.
+            }
+        }
+    }
+    values.into_iter().sum::<Value>() == sum
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
