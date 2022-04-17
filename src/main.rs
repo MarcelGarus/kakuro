@@ -34,6 +34,7 @@ fn main() {
         "early_abort" => solvers::early_abort::solve(&input),
         "prioritize" => solvers::prioritize::solve(&input),
         "divide" => solvers::divide::solve(&input),
+        "lazy" => solvers::lazy::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     };
     println!("Done.");

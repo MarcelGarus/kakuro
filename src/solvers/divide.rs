@@ -6,10 +6,10 @@ pub fn solve(input: &Input) -> Output {
     solve_rec(input, "")
 }
 
-fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
+fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
     println!(
         "{}Solving input with {} cells and {} constraints.",
-        context,
+        log_prefix,
         input.num_cells,
         input.constraints.len(),
     );
@@ -17,16 +17,16 @@ fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
 
     if matches!(splitted, None) {
         // || input.num_cells < 10 {
-        println!("{}Solving with early abort.", context);
+        println!("{}Solving with early abort.", log_prefix);
         let solutions = super::early_abort::solve(input);
-        println!("{}Done. Found {} solutions.", context, solutions.len());
+        println!("{}Done. Found {} solutions.", log_prefix, solutions.len());
         return solutions;
     }
 
     let mut splitted = splitted.unwrap();
     println!(
         "{}Split with connections: {:?}",
-        context, splitted.connections
+        log_prefix, splitted.connections
     );
     if splitted.white.num_cells > splitted.black.num_cells {
         splitted = splitted.flip();
@@ -63,21 +63,21 @@ fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
     };
 
     // Solve parts.
-    let inner_context = format!("{}  ", context);
-    let white_solutions = solve_rec(&splitted.white, &inner_context);
-    let black_solutions = solve_rec(&splitted.black, &inner_context);
+    let inner_log_prefix = format!("{}  ", log_prefix);
+    let white_solutions = solve_rec(&splitted.white, &inner_log_prefix);
+    let black_solutions = solve_rec(&splitted.black, &inner_log_prefix);
 
     // Combine results.
     println!(
         "{}Combining {}x{} solutions with {} connections.",
-        context,
+        log_prefix,
         white_solutions.len(),
         black_solutions.len(),
         splitted.connections.len(),
     );
     println!(
         "{}Naively joining solutions would require checking {} candidates.",
-        context,
+        log_prefix,
         white_solutions.len() * black_solutions.len()
     );
     let mut white_solutions_by_connection_cells = HashMap::new();
@@ -135,7 +135,7 @@ fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
             }
             println!(
                 "{}  Combining white {:?} and black {:?} works and yields {}x{} = {} candidates.",
-                context,
+                log_prefix,
                 white_connecting_values,
                 black_connecting_values,
                 white_solutions.len(),
@@ -151,15 +151,13 @@ fn solve_rec(input: &Input, context: &str) -> Vec<Solution> {
                     for (i, value) in black_solution.iter().enumerate() {
                         attempt[black_mapping[i]] = *value;
                     }
-                    if input.is_solution(&attempt) {
-                        solutions.push(attempt);
-                    }
+                    solutions.push(attempt);
                 }
             }
         }
     }
 
-    println!("{}Done. Found {} solutions.", context, solutions.len());
+    println!("{}Done. Found {} solutions.", log_prefix, solutions.len());
     solutions
 }
 

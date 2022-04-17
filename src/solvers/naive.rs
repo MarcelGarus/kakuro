@@ -4,13 +4,13 @@ pub fn solve(input: &Input) -> Output {
     let mut attempt = vec![1; input.num_cells];
     let mut solutions = vec![];
     'search: loop {
-        println!(
-            "Evaluating attempt {}",
-            attempt
-                .iter()
-                .map(|number| format!("{}", number))
-                .collect::<String>()
-        );
+        // println!(
+        //     "Evaluating attempt {}",
+        //     attempt
+        //         .iter()
+        //         .map(|number| format!("{}", number))
+        //         .collect::<String>()
+        // );
 
         // Check if this is a solution.
         if input.is_solution(&attempt) {

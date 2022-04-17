@@ -56,18 +56,18 @@ pub fn solve(input: &Input) -> Output {
 }
 
 fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
-    println!(
-        "Evaluating attempt {}",
-        attempt
-            .iter()
-            .map(|cell| {
-                match cell {
-                    Some(number) => format!("{}", number),
-                    None => "-".to_string(),
-                }
-            })
-            .collect::<String>()
-    );
+    // println!(
+    //     "Evaluating attempt {}",
+    //     attempt
+    //         .iter()
+    //         .map(|cell| {
+    //             match cell {
+    //                 Some(number) => format!("{}", number),
+    //                 None => "-".to_string(),
+    //             }
+    //         })
+    //         .collect::<String>()
+    // );
     if !input.is_possible_solution(attempt) {
         return;
     }

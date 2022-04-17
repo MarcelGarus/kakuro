@@ -20,9 +20,14 @@
 //!   Both smaller Kakuros are solved in isolation and the product of both
 //!   result sets is filtered to the solutions also fulfilling the connecting
 //!   constraints.
+//! - lazy: Like divide, but the recursive solving communicates which parts of
+//!   the board play a role in connecting constraints later on. This allows
+//!   inner calls to not actually construct solutions that are equivalent in
+//!   this regard.
 
 pub mod divide;
 pub mod early_abort;
 pub mod gradual;
+pub mod lazy;
 pub mod naive;
 pub mod prioritize;
