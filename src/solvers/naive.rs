@@ -11,7 +11,7 @@ pub fn solve(input: &Input) -> Output {
     'search: loop {
         log(format!(
             "Evaluating attempt {}",
-            attempt.iter().map(|number| format!("{}", number)).join("")
+            attempt.iter().map(|digit| format!("{}", digit)).join("")
         ));
 
         if input.is_solution(&attempt) {

@@ -14,18 +14,18 @@ trait InputExt {
 impl InputExt for Input {
     fn is_possible_solution(&self, attempt: &Game) -> bool {
         for constraint in self.constraints.iter() {
-            let cell_values = constraint
+            let cells = constraint
                 .cells
                 .iter()
                 .map(|b| attempt[*b])
                 .collect::<HashSet<_>>();
 
-            if cell_values.iter().any(|value| value.is_none()) {
+            if cells.iter().any(|cell| cell.is_none()) {
                 continue; // Ignore partially filled out constraints.
-            } else if cell_values.len() != constraint.cells.len() {
-                return false; // A number appears twice.
+            } else if cells.len() != constraint.cells.len() {
+                return false; // A digit appears twice.
             } else {
-                let sum = cell_values
+                let sum = cells
                     .into_iter()
                     .map(|a| a.unwrap())
                     .reduce(|a, b| a + b)
@@ -53,7 +53,7 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
             .iter()
             .map(|cell| {
                 match cell {
-                    Some(number) => format!("{}", number),
+                    Some(digit) => format!("{}", digit),
                     None => "-".to_string(),
                 }
             })
@@ -64,8 +64,8 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
         return;
     }
 
-    let first_free_index = attempt.iter().position(|it| it.is_none());
-    if let Some(index) = first_free_index {
+    let first_empty_cell_index = attempt.iter().position(|it| it.is_none());
+    if let Some(index) = first_empty_cell_index {
         for i in 1..=9 {
             attempt[index] = Some(i);
             solve_rec(input, attempt, solutions);
@@ -73,6 +73,6 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
         attempt[index] = None;
     } else {
         // This is a solution.
-        solutions.push(attempt.iter().map(|it| it.unwrap()).collect());
+        solutions.push(attempt.iter().map(|cell| cell.unwrap()).collect());
     }
 }

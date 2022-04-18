@@ -19,30 +19,30 @@ impl InputExt for Input {
                 .iter()
                 .map(|b| attempt[*b])
                 .collect::<Vec<_>>();
-            let numbers = cells.into_iter().filter_map(|it| it).collect_vec();
-            let len = numbers.len();
+            let digits = cells.into_iter().filter_map(|it| it).collect_vec();
+            let len = digits.len();
 
-            let numbers = numbers.into_iter().collect::<HashSet<_>>();
-            if numbers.len() < len {
-                return false; // A number appears twice.
+            let digits = digits.into_iter().collect::<HashSet<_>>();
+            if digits.len() < len {
+                return false; // A digit appears twice.
             }
 
-            let sum: Value = numbers.iter().sum();
+            let sum: Value = digits.iter().sum();
             if sum == 0 {
                 continue; // No cells filled in yet; we assume the attempt is possible.
             }
 
-            let possible_digits = (1..=9u8)
+            let unused_digits = (1..=9u8)
                 .collect::<HashSet<_>>()
-                .difference(&numbers)
+                .difference(&digits)
                 .map(|it| *it)
                 .collect::<HashSet<Value>>();
-            let is_possible_to_reach_sum = possible_digits
+            let is_sum_reachable = unused_digits
                 .into_iter()
-                .combinations(constraint.cells.len() - numbers.len())
-                .map(|additional_numbers| sum + additional_numbers.into_iter().sum::<Value>())
+                .combinations(constraint.cells.len() - digits.len())
+                .map(|additional_digits| sum + additional_digits.into_iter().sum::<Value>())
                 .any(|possible_sum| possible_sum == constraint.sum);
-            if !is_possible_to_reach_sum {
+            if !is_sum_reachable {
                 return false;
             }
         }
@@ -64,7 +64,7 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
             .iter()
             .map(|cell| {
                 match cell {
-                    Some(number) => format!("{}", number),
+                    Some(digit) => format!("{}", digit),
                     None => "-".to_string(),
                 }
             })
@@ -73,8 +73,8 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
     if !input.is_possible_solution(attempt) {
         return;
     }
-    let index_to_fill = attempt.iter().position(|it| it.is_none());
-    if let Some(index) = index_to_fill {
+    let first_empty_cell_index = attempt.iter().position(|it| it.is_none());
+    if let Some(index) = first_empty_cell_index {
         for i in 1..=9 {
             attempt[index] = Some(i);
             solve_rec(input, attempt, solutions);
@@ -82,6 +82,6 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
         attempt[index] = None;
     } else {
         // This is a solution.
-        solutions.push(attempt.iter().map(|it| it.unwrap()).collect());
+        solutions.push(attempt.iter().map(|cell| cell.unwrap()).collect());
     }
 }

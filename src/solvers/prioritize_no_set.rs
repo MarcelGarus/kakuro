@@ -23,7 +23,7 @@ impl InputExt for Input {
             let mut seen = [false; 9];
             for digit in &digits {
                 if seen[(digit - 1) as usize] {
-                    return false; // A number appears twice.
+                    return false; // A digit appears twice.
                 } else {
                     seen[(digit - 1) as usize] = true;
                 }
@@ -31,18 +31,18 @@ impl InputExt for Input {
 
             let sum: Value = digits.iter().sum();
             if sum == 0 {
-                continue; // No cells filled in yet; we assume the attempt is possible.
+                continue; // No cells filled in yet.
             }
 
             let unused_digits = (1..=9u8)
                 .filter(|digit| !seen[(digit - 1) as usize])
                 .collect_vec();
-            let is_possible_to_reach_sum = unused_digits
+            let is_sum_reachable = unused_digits
                 .into_iter()
                 .combinations(constraint.cells.len() - digits.len())
                 .map(|additional_digits| sum + additional_digits.into_iter().sum::<Value>())
                 .any(|possible_sum| possible_sum == constraint.sum);
-            if !is_possible_to_reach_sum {
+            if !is_sum_reachable {
                 return false;
             }
         }
@@ -64,7 +64,7 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
             .iter()
             .map(|cell| {
                 match cell {
-                    Some(number) => format!("{}", number),
+                    Some(digit) => format!("{}", digit),
                     None => "-".to_string(),
                 }
             })
@@ -76,7 +76,7 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
     }
 
     // For each cell, save how many partially filled constraints contain it.
-    let mut index_priorities = vec![0; input.num_cells];
+    let mut cell_priorities = vec![0; input.num_cells];
     for constraint in &input.constraints {
         let is_partially_filled = constraint
             .cells
@@ -84,25 +84,25 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
             .any(|index| attempt[*index].is_some());
         if is_partially_filled {
             for i in &constraint.cells {
-                if let None = attempt[*i] {
-                    index_priorities[*i] += 1;
+                if attempt[*i].is_none() {
+                    cell_priorities[*i] += 1;
                 }
             }
         }
     }
 
-    let cell_to_fill = index_priorities
+    let cell_to_fill = cell_priorities
         .into_iter()
         .enumerate()
-        .max_by_key(|it| it.1)
+        .max_by_key(|(_, priority)| *priority)
         .and_then(|(cell, priority)| {
             if priority > 0 {
-                // The cell is guaranteed to be empty because only the priority of empty
-                // cells was increased before.
+                // The cell is guaranteed to be empty because only the priority
+                // of empty cells can be non-zero.
                 Some(cell)
             } else {
-                // No constraint contains a number _and_ an empty cell. Just fill the
-                // first empty cell.
+                // No constraint contains a digit _and_ an empty cell. Just fill
+                // the first empty cell.
                 attempt.iter().position(|it| it.is_none())
             }
         });
