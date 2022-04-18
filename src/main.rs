@@ -1,5 +1,6 @@
 mod board;
 mod game;
+mod generate;
 mod log;
 mod solvers;
 
@@ -11,6 +12,12 @@ fn main() {
     let input = args()
         .nth(2)
         .expect("Give the input file as the second argument.");
+
+    if solver == "generate" {
+        let board = generate::generate(10, 10, 80);
+        fs::write(input, format!("{}", board).as_bytes()).unwrap();
+        return;
+    }
 
     println!("Reading from file.");
     let input = fs::read(input).expect("Couldn't read from input file.");
@@ -46,9 +53,9 @@ fn main() {
     println!();
 
     if solutions.len() == 1 {
-        println!("Solution:");
+        println!("One solution:");
     } else {
-        println!("Solutions:");
+        println!("{} solutions:", solutions.len());
     }
     for solution in solutions {
         print!(
