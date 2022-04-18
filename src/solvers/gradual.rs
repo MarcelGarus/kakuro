@@ -1,9 +1,12 @@
+use crate::{
+    game::{Input, Output, Solution, Value},
+    log::log,
+};
+use itertools::Itertools;
 use std::collections::HashSet;
 
-use crate::game::{Input, Output, Solution, Value};
-
-type Game = Vec<Cell>;
-type Cell = Option<Value>;
+// A partially filled out Kakuro.
+type Game = Vec<Option<Value>>;
 
 trait InputExt {
     fn is_possible_solution(&self, attempt: &Game) -> bool;
@@ -16,8 +19,9 @@ impl InputExt for Input {
                 .iter()
                 .map(|b| attempt[*b])
                 .collect::<HashSet<_>>();
+
             if cell_values.iter().any(|value| value.is_none()) {
-                continue;
+                continue; // Ignore partially filled out constraints.
             } else if cell_values.len() != constraint.cells.len() {
                 return false; // A number appears twice.
             } else {
@@ -43,7 +47,7 @@ pub fn solve(input: &Input) -> Output {
 }
 
 fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
-    println!(
+    log(format!(
         "Evaluating attempt {}",
         attempt
             .iter()
@@ -53,11 +57,13 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
                     None => "-".to_string(),
                 }
             })
-            .collect::<String>()
-    );
+            .join("")
+    ));
+
     if !input.is_possible_solution(attempt) {
         return;
     }
+
     let first_free_index = attempt.iter().position(|it| it.is_none());
     if let Some(index) = first_free_index {
         for i in 1..=9 {
