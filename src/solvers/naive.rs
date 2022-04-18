@@ -1,29 +1,29 @@
-use crate::game::{Input, Output};
+use crate::{
+    game::{Input, Output},
+    log::log,
+};
+use itertools::Itertools;
 
 pub fn solve(input: &Input) -> Output {
     let mut attempt = vec![1; input.num_cells];
     let mut solutions = vec![];
-    'search: loop {
-        // println!(
-        //     "Evaluating attempt {}",
-        //     attempt
-        //         .iter()
-        //         .map(|number| format!("{}", number))
-        //         .collect::<String>()
-        // );
 
-        // Check if this is a solution.
+    'search: loop {
+        log(format!(
+            "Evaluating attempt {}",
+            attempt.iter().map(|number| format!("{}", number)).join("")
+        ));
+
         if input.is_solution(&attempt) {
             solutions.push(attempt.clone());
         }
 
-        // Change the solution attempt by incrementing it if interpreted as a
-        // binary number.
+        // Increase attempt by one, interpreted as a binary number.
         let mut i = attempt.len() - 1;
         loop {
             attempt[i] += 1;
             if attempt[i] == 10 {
-                attempt[i] = 0;
+                attempt[i] = 1;
                 if i == 0 {
                     break 'search;
                 }
@@ -33,5 +33,6 @@ pub fn solve(input: &Input) -> Output {
             }
         }
     }
+
     solutions
 }

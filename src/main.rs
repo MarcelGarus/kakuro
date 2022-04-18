@@ -1,5 +1,6 @@
 mod board;
 mod game;
+mod log;
 mod solvers;
 
 use crate::board::*;
