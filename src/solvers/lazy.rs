@@ -187,15 +187,17 @@ impl QuasiSolution {
     }
 }
 
-fn do_values_satisfy_sum(values: &[Value], sum: Value) -> bool {
-    for (i, a) in values.iter().enumerate() {
-        for (j, b) in values.iter().enumerate() {
-            if a == b && i != j {
-                return false; // Duplicate value.
-            }
+fn do_digits_satisfy_sum(digits: &[Value], sum: Value) -> bool {
+    let mut seen = [false; 9];
+    for digit in digits {
+        if seen[(digit - 1) as usize] {
+            return false; // A digit appears twice.
+        } else {
+            seen[(digit - 1) as usize] = true;
         }
     }
-    values.into_iter().sum::<Value>() == sum
+
+    digits.into_iter().sum::<Value>() == sum
 }
 
 pub fn solve(input: &Input) -> Output {
@@ -330,7 +332,7 @@ fn solve_rec(
                         }
                     })
                     .collect_vec();
-                if !do_values_satisfy_sum(&values, constraint.sum) {
+                if !do_digits_satisfy_sum(&values, constraint.sum) {
                     continue 'solutions;
                 }
             }

@@ -3,7 +3,11 @@ use crate::{
     log::log,
 };
 use itertools::Itertools;
-use std::{cmp::max, collections::HashMap};
+use std::{
+    cmp::max,
+    collections::HashMap,
+    fmt::{self, Display},
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Constraint {
@@ -156,6 +160,89 @@ fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
     None
 }
 
+#[derive(Debug, Clone)]
+enum QuasiSolution {
+    Concrete(Solution),
+    Plus(Vec<QuasiSolution>),
+    Product {
+        colors: Vec<Color>,
+        red: Box<QuasiSolution>,
+        blue: Box<QuasiSolution>,
+    },
+}
+impl QuasiSolution {
+    fn build(self) -> Vec<Solution> {
+        match self {
+            QuasiSolution::Concrete(concrete) => vec![concrete],
+            QuasiSolution::Plus(children) => {
+                Iterator::flatten(children.into_iter().map(|it| it.build())).collect_vec()
+            }
+            QuasiSolution::Product { colors, red, blue } => {
+                let all_red = red.build();
+                let all_blue = blue.build();
+                let mut solutions = vec![];
+                for red in all_red.clone() {
+                    for blue in all_blue.clone() {
+                        let mut solution = vec![];
+                        let mut red = red.clone();
+                        let mut blue = blue.clone();
+                        for color in &colors {
+                            solution.push(match color {
+                                Color::Red => red.remove(0),
+                                Color::Blue => blue.remove(0),
+                            });
+                        }
+                        solutions.push(solution);
+                    }
+                }
+                solutions
+            }
+        }
+    }
+}
+impl Display for QuasiSolution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_indented(f, "")
+    }
+}
+impl QuasiSolution {
+    fn fmt_indented(&self, f: &mut fmt::Formatter<'_>, indentation: &str) -> fmt::Result {
+        match self {
+            QuasiSolution::Concrete(concrete) => {
+                writeln!(
+                    f,
+                    "{}{}",
+                    indentation,
+                    concrete.iter().map(|digit| format!("{}", digit)).join("")
+                )?;
+            }
+            QuasiSolution::Plus(plus) => {
+                writeln!(f, "{}+", indentation)?;
+                for solution in plus {
+                    solution.fmt_indented(f, &format!(" {}", indentation))?;
+                }
+            }
+            QuasiSolution::Product { colors, red, blue } => {
+                writeln!(
+                    f,
+                    "{}*{}",
+                    indentation,
+                    colors
+                        .iter()
+                        .map(|color| match color {
+                            Color::Red => "r",
+                            Color::Blue => "b",
+                        })
+                        .join("")
+                )?;
+                red.fmt_indented(f, &format!(" {}", indentation))?;
+                blue.fmt_indented(f, &format!(" {}", indentation))?;
+            }
+        }
+        Ok(())
+    }
+}
+
 fn add_slices<T: Clone>(a: &[T], b: &[T]) -> Vec<T> {
     let mut v = vec![];
     for t in a {
@@ -224,16 +311,6 @@ mod early_abort {
         attempt: &mut Game,
         solutions: &mut Vec<Solution>,
     ) {
-        // println!(
-        //     "Attempt {}",
-        //     attempt
-        //         .iter()
-        //         .map(|cell| match cell {
-        //             Some(number) => format!("{}", number),
-        //             None => "-".to_string(),
-        //         })
-        //         .join("")
-        // );
         if !is_possible_solution(constraints, attempt) {
             return;
         }
@@ -276,15 +353,17 @@ const MAXES: [Value; 10] = [
     1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9,
 ];
 
-fn do_values_satisfy_sum(values: &[Value], min: Value, max: Value) -> bool {
-    for (i, a) in values.iter().enumerate() {
-        for (j, b) in values.iter().enumerate() {
-            if a == b && i != j {
-                return false; // Duplicate value.
-            }
+fn do_digits_satisfy_sum(digits: &[Value], min: Value, max: Value) -> bool {
+    let mut seen = [false; 9];
+    for digit in digits {
+        if seen[(digit - 1) as usize] {
+            return false; // A digit appears twice.
+        } else {
+            seen[(digit - 1) as usize] = true;
         }
     }
-    let sum = values.into_iter().sum::<Value>();
+
+    let sum = digits.into_iter().sum::<Value>();
     min <= sum && sum <= max
 }
 
@@ -308,45 +387,6 @@ fn translate_constraint(
     }
 }
 
-#[derive(Debug, Clone)]
-enum QuasiSolution {
-    Concrete(Solution),
-    Plus(Vec<QuasiSolution>),
-    Product {
-        colors: Vec<Color>,
-        red: Box<QuasiSolution>,
-        blue: Box<QuasiSolution>,
-    },
-}
-impl QuasiSolution {
-    fn build(self) -> Vec<Solution> {
-        match self {
-            QuasiSolution::Concrete(concrete) => vec![concrete],
-            QuasiSolution::Plus(children) => {
-                Iterator::flatten(children.into_iter().map(|it| it.build())).collect_vec()
-            }
-            QuasiSolution::Product { colors, red, blue } => {
-                let mut red = red.build();
-                let mut blue = blue.build();
-                let mut solutions = vec![];
-                for red in &mut red {
-                    for blue in &mut blue {
-                        let mut solution = vec![];
-                        for color in &colors {
-                            solution.push(match color {
-                                Color::Red => red.remove(0),
-                                Color::Blue => blue.remove(0),
-                            });
-                        }
-                        solutions.push(solution);
-                    }
-                }
-                solutions
-            }
-        }
-    }
-}
-
 pub fn solve(input: &game::Input) -> Output {
     let mut solutions = solve_rec(
         input.num_cells,
@@ -359,6 +399,7 @@ pub fn solve(input: &game::Input) -> Output {
         "",
     );
     let solutions = solutions.remove(&vec![]).unwrap();
+    // println!("Solutions:\n{}", solutions);
     solutions.build()
 }
 
@@ -402,8 +443,16 @@ fn solve_rec(
         return grouped
             .into_iter()
             .map(|(key, group)| {
-                let solution =
-                    QuasiSolution::Plus(group.map(QuasiSolution::Concrete).collect_vec());
+                let group = group.collect_vec();
+                let solution = QuasiSolution::Plus(
+                    group
+                        .into_iter()
+                        .map(|solution| {
+                            assert!(!solution.is_empty());
+                            QuasiSolution::Concrete(solution)
+                        })
+                        .collect_vec(),
+                );
                 (key, solution)
             })
             .collect();
@@ -493,7 +542,7 @@ fn solve_rec(
                 )
             {
                 let values = add_slices(red_values, blue_values);
-                if !do_values_satisfy_sum(&values, constraint.min, constraint.max) {
+                if !do_digits_satisfy_sum(&values, constraint.min, constraint.max) {
                     continue 'solutions;
                 }
             }
