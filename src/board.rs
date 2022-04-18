@@ -73,7 +73,7 @@ impl Display for Cell {
                             Some(s) => format!("{}", s),
                         }
                     }
-                    write!(f, "{:>2}/{:2}", fmt_sum(vertical), fmt_sum(horizontal))
+                    write!(f, "{:>2}\\{:2}", fmt_sum(vertical), fmt_sum(horizontal))
                 }
             },
             Cell::Empty => "_____".fmt(f),
