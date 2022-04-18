@@ -91,32 +91,30 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
         }
     }
 
-    let highest_priority_cell = index_priorities
+    let cell_to_fill = index_priorities
         .into_iter()
         .enumerate()
-        .max_by_key(|it| it.1);
-    let (cell, priority) = match highest_priority_cell {
-        Some(it) => it,
-        None => {
-            // This is a solution.
-            solutions.push(attempt.iter().map(|it| it.unwrap()).collect());
-            return;
+        .max_by_key(|it| it.1)
+        .and_then(|(cell, priority)| {
+            if priority > 0 {
+                // The cell is guaranteed to be empty because only the priority of empty
+                // cells was increased before.
+                Some(cell)
+            } else {
+                // No constraint contains a number _and_ an empty cell. Just fill the
+                // first empty cell.
+                attempt.iter().position(|it| it.is_none())
+            }
+        });
+
+    if let Some(cell) = cell_to_fill {
+        for i in 1..=9 {
+            attempt[cell] = Some(i);
+            solve_rec(input, attempt, solutions);
         }
-    };
-
-    let cell_to_fill = if priority > 0 {
-        // The cell is guaranteed to be empty because only the priority of empty
-        // cells was increased before.
-        cell
+        attempt[cell] = None;
     } else {
-        // No constraint contains a number _and_ an empty cell. Just fill the
-        // first empty cell.
-        attempt.iter().position(|it| it.is_none()).unwrap()
-    };
-
-    for i in 1..=9 {
-        attempt[cell_to_fill] = Some(i);
-        solve_rec(input, attempt, solutions);
+        // This is a solution.
+        solutions.push(attempt.iter().map(|it| it.unwrap()).collect());
     }
-    attempt[cell_to_fill] = None;
 }
