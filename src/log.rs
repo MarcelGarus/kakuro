@@ -1,3 +1,7 @@
-pub fn log(_message: String) {
-    // println!("{}", message);
+const LOGGING: bool = false;
+
+pub fn log(message: String) {
+    if LOGGING {
+        println!("{}", message);
+    }
 }

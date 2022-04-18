@@ -32,7 +32,8 @@
 //!   between 1 and 5.
 //!
 //! Ideas:
-//! - first go by sum
+//! - separate divide and combine_by_sum
+//! - combine first by sum, only then by actual numbers
 //! - track the possibility wave like when solving by hand
 
 pub mod connections;
