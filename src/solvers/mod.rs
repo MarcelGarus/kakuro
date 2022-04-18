@@ -37,8 +37,8 @@
 
 pub mod connections;
 pub mod divide;
-pub mod early_abort;
 pub mod gradual;
 pub mod lazy;
 pub mod naive;
 pub mod prioritize;
+pub mod sum_reachable;

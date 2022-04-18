@@ -18,7 +18,7 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
     if matches!(splitted, None) {
         // || input.num_cells < 10 {
         println!("{}Solving with early abort.", log_prefix);
-        let solutions = super::early_abort::solve(input);
+        let solutions = super::sum_reachable::solve(input);
         println!("{}Done. Found {} solutions.", log_prefix, solutions.len());
         return solutions;
     }

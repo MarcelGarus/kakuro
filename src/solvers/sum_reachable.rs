@@ -1,8 +1,9 @@
-use std::collections::HashSet;
-
+use crate::{
+    game::{Input, Output, Solution, Value},
+    log::log,
+};
 use itertools::Itertools;
-
-use crate::game::{Input, Output, Solution, Value};
+use std::collections::HashSet;
 
 type Game = Vec<Cell>;
 type Cell = Option<Value>;
@@ -18,16 +19,17 @@ impl InputExt for Input {
                 .iter()
                 .map(|b| attempt[*b])
                 .collect::<Vec<_>>();
-            let numbers = cells.into_iter().filter_map(|it| it).collect::<Vec<_>>();
+            let numbers = cells.into_iter().filter_map(|it| it).collect_vec();
+            let len = numbers.len();
 
-            if numbers.iter().collect::<HashSet<_>>().len() < numbers.len() {
+            let numbers = numbers.into_iter().collect::<HashSet<_>>();
+            if numbers.len() < len {
                 return false; // A number appears twice.
             }
 
-            let numbers = numbers.into_iter().collect::<HashSet<_>>();
             let sum: Value = numbers.iter().sum();
             if sum == 0 {
-                continue; // No cells filled in yet; we assume the game itself is possible.
+                continue; // No cells filled in yet; we assume the attempt is possible.
             }
 
             let possible_digits = (1..=9u8)
@@ -56,18 +58,18 @@ pub fn solve(input: &Input) -> Output {
 }
 
 fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
-    // println!(
-    //     "Evaluating attempt {}",
-    //     attempt
-    //         .iter()
-    //         .map(|cell| {
-    //             match cell {
-    //                 Some(number) => format!("{}", number),
-    //                 None => "-".to_string(),
-    //             }
-    //         })
-    //         .collect::<String>()
-    // );
+    log(format!(
+        "Evaluating attempt {}",
+        attempt
+            .iter()
+            .map(|cell| {
+                match cell {
+                    Some(number) => format!("{}", number),
+                    None => "-".to_string(),
+                }
+            })
+            .collect::<String>()
+    ));
     if !input.is_possible_solution(attempt) {
         return;
     }

@@ -111,7 +111,7 @@ fn solve_rec(
 
     if matches!(splitted, None) {
         println!("{}Solving with early abort.", log_prefix);
-        let solutions = super::early_abort::solve(input);
+        let solutions = super::sum_reachable::solve(input);
         println!("{}Done. Found {} solutions.", log_prefix, solutions.len());
         let grouped = solutions
             .into_iter()
