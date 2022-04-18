@@ -29,25 +29,24 @@
 //!   the board play a role in connecting constraints later on. This allows
 //!   inner calls to not actually construct solutions that are equivalent in
 //!   this regard.
-//! - connections: Like lazy, but instead of communicating which cells connect
-//!   the parts, the recursive solving communicates the connecting constraints
-//!   themselves and information about the minimum/maximum sum that one part
-//!   should have. For example, if a connecting constraint with one cell in
-//!   either part has a sum of 6, then the values in each part can only be
-//!   between 1 and 5.
+//! - propagate_constraints: Like lazy, but instead of communicating to the
+//!   partial solvers which connecting cells are important later on, we
+//!   communicate the connecting constraints themselves and information about
+//!   the minimum/maximum sum that one part should have. For example, if a
+//!   connecting constraint with one cell in either part has a sum of 6, then
+//!   the values in each part can only be between 1 and 5.
 //!
 //! Ideas:
-//! - separate divide and combine_by_sum
 //! - combine first by sum, only then by actual numbers
 //! - track the possibility wave like when solving by hand
 
 pub mod combine_by_connecting_cells;
-pub mod connections;
 pub mod divide;
 pub mod gradual;
 pub mod lazy;
 pub mod naive;
 pub mod prioritize;
 pub mod prioritize_no_set;
+pub mod propagate_constraints;
 pub mod sum_reachable;
 pub mod sum_reachable_no_set;

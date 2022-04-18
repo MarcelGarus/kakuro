@@ -39,7 +39,7 @@ fn main() {
         "divide" => solvers::divide::solve(&input),
         "combine_by_connecting_cells" => solvers::combine_by_connecting_cells::solve(&input),
         "lazy" => solvers::lazy::solve(&input),
-        "connections" => solvers::connections::solve(&input),
+        "propagate_constraints" => solvers::propagate_constraints::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     };
     println!("Done.");
