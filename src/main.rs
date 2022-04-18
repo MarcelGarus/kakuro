@@ -35,6 +35,7 @@ fn main() {
         "prioritize" => solvers::prioritize::solve(&input),
         "divide" => solvers::divide::solve(&input),
         "lazy" => solvers::lazy::solve(&input),
+        "connections" => solvers::connections::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     };
     println!("Done.");

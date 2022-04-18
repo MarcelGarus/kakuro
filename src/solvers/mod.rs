@@ -24,7 +24,18 @@
 //!   the board play a role in connecting constraints later on. This allows
 //!   inner calls to not actually construct solutions that are equivalent in
 //!   this regard.
+//! - connections: Like lazy, but instead of communicating which cells connect
+//!   the parts, the recursive solving communicates the connecting constraints
+//!   themselves and information about the minimum/maximum sum that one part
+//!   should have. For example, if a connecting constraint with one cell in
+//!   either part has a sum of 6, then the values in each part can only be
+//!   between 1 and 5.
+//!
+//! Ideas:
+//! - first go by sum
+//! - track the possibility wave like when solving by hand
 
+pub mod connections;
 pub mod divide;
 pub mod early_abort;
 pub mod gradual;
