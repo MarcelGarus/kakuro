@@ -1,6 +1,7 @@
 //! This module contains the definition of a board. This corresponds to a 2D
 //! layout of cells, just like you would see them on paper.
 
+use itertools::Itertools;
 use std::fmt::{self, Display, Formatter};
 
 pub type Value = u8;
@@ -40,7 +41,7 @@ impl ParseBoard for str {
                                     )
                                 }
                             }
-                            let parts = word.split('\\').collect::<Vec<_>>();
+                            let parts = word.split('\\').collect_vec();
                             if parts.len() != 2 {
                                 panic!("Unknown cell {:?}!", word);
                             }
@@ -50,9 +51,9 @@ impl ParseBoard for str {
                             }
                         }
                     })
-                    .collect::<Vec<_>>()
+                    .collect_vec()
             })
-            .collect::<Vec<_>>();
+            .collect_vec();
         Board { cells }
     }
 }

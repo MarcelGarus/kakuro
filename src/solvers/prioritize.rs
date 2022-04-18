@@ -14,11 +14,7 @@ trait InputExt {
 impl InputExt for Input {
     fn is_possible_solution(&self, attempt: &Game) -> bool {
         for constraint in self.constraints.iter() {
-            let cells = constraint
-                .cells
-                .iter()
-                .map(|b| attempt[*b])
-                .collect::<Vec<_>>();
+            let cells = constraint.cells.iter().map(|b| attempt[*b]).collect_vec();
             let digits = cells.into_iter().filter_map(|it| it).collect_vec();
             let len = digits.len();
 
