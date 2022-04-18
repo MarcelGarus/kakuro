@@ -37,6 +37,7 @@ fn main() {
         "prioritize_no_set" => solvers::prioritize_no_set::solve(&input),
         "sum_reachable_no_set" => solvers::sum_reachable_no_set::solve(&input),
         "divide" => solvers::divide::solve(&input),
+        "combine_by_connecting_cells" => solvers::combine_by_connecting_cells::solve(&input),
         "lazy" => solvers::lazy::solve(&input),
         "connections" => solvers::connections::solve(&input),
         _ => panic!("Unknown solver {}.", solver),

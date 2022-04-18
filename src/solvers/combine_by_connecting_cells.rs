@@ -3,32 +3,7 @@ use crate::{
     log::log,
 };
 use itertools::Itertools;
-
-trait InputExt {
-    fn is_possible_solution(&self, attempt: &Solution) -> bool;
-}
-impl InputExt for Input {
-    fn is_possible_solution(&self, attempt: &Solution) -> bool {
-        for constraint in self.constraints.iter() {
-            let digits = constraint.cells.iter().map(|b| attempt[*b]).collect_vec();
-
-            let mut seen = [false; 9];
-            for digit in &digits {
-                if seen[(digit - 1) as usize] {
-                    return false; // A digit appears twice.
-                } else {
-                    seen[(digit - 1) as usize] = true;
-                }
-            }
-
-            let sum: Value = digits.iter().sum();
-            if sum != constraint.sum {
-                return false;
-            }
-        }
-        return true;
-    }
-}
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 enum Color {
@@ -49,6 +24,10 @@ struct SplitInput {
     // The colors vector has the length of the original input, an assigns each
     // cell a color.
     colors: Vec<Color>,
+
+    // A vector that maps cell indizes from the original input to the cell
+    // indizes in the smaller parts.
+    index_mapping: Vec<usize>,
 
     red: Input,
     blue: Input,
@@ -144,6 +123,7 @@ fn split(input: &Input) -> Option<SplitInput> {
             }
             return Some(SplitInput {
                 colors: colors.clone(),
+                index_mapping: index_mapping.clone(),
                 red: create_sub_input(Color::Red, &colors, &remaining_constraints, &index_mapping),
                 blue: create_sub_input(
                     Color::Blue,
@@ -159,6 +139,19 @@ fn split(input: &Input) -> Option<SplitInput> {
         }
     }
     None
+}
+
+fn do_digits_satisfy_sum(digits: &[Value], sum: Value) -> bool {
+    let mut seen = [false; 9];
+    for digit in digits {
+        if seen[(digit - 1) as usize] {
+            return false; // A digit appears twice.
+        } else {
+            seen[(digit - 1) as usize] = true;
+        }
+    }
+
+    digits.into_iter().sum::<Value>() == sum
 }
 
 pub fn solve(input: &Input) -> Output {
@@ -195,8 +188,9 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
     }
     let SplitInput {
         colors,
-        red: red_input,
-        blue: blue_input,
+        index_mapping,
+        red,
+        blue,
         connections,
     } = split;
 
@@ -212,8 +206,8 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
 
     // Solve parts.
     let inner_log_prefix = format!("{}  ", log_prefix);
-    let red_solutions = solve_rec(&red_input, &inner_log_prefix);
-    let blue_solutions = solve_rec(&blue_input, &inner_log_prefix);
+    let red_solutions = solve_rec(&red, &inner_log_prefix);
+    let blue_solutions = solve_rec(&blue, &inner_log_prefix);
 
     // Combine results.
     log(format!(
@@ -229,18 +223,84 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
         red_solutions.len() * blue_solutions.len()
     ));
 
+    fn get_solutions_by_sums(
+        solutions: Vec<Solution>,
+        color: Color,
+        colors: &[Color],
+        index_mapping: &[usize],
+        connections: &[Constraint],
+    ) -> HashMap<Vec<Vec<Value>>, Vec<Vec<Value>>> {
+        let mut solutions_by_sums = HashMap::new();
+        for solution in solutions {
+            let key = connections
+                .iter()
+                .map(|constraint| {
+                    constraint
+                        .cells
+                        .iter()
+                        .filter(|cell| colors[**cell] == color)
+                        .map(|cell| solution[index_mapping[*cell]])
+                        .collect_vec()
+                })
+                .collect_vec();
+            solutions_by_sums
+                .entry(key)
+                .or_insert_with_key(|_| vec![])
+                .push(solution);
+        }
+        solutions_by_sums
+    }
+
+    let red_solutions_by_sums = get_solutions_by_sums(
+        red_solutions,
+        Color::Red,
+        &colors,
+        &index_mapping,
+        &connections,
+    );
+    let blue_solutions_by_sums = get_solutions_by_sums(
+        blue_solutions,
+        Color::Blue,
+        &colors,
+        &index_mapping,
+        &connections,
+    );
+
     let mut solutions = vec![];
-    for red_solution in &red_solutions {
-        for blue_solution in &blue_solutions {
-            let mut attempt = vec![0; input.num_cells];
-            for (i, value) in red_solution.iter().enumerate() {
-                attempt[red_to_original_mapping[i]] = *value;
+    for (red_connecting_values, red_solutions) in &red_solutions_by_sums {
+        'solutions: for (blue_connecting_values, blue_solutions) in &blue_solutions_by_sums {
+            for ((red, blue), constraint) in red_connecting_values
+                .iter()
+                .zip(blue_connecting_values)
+                .zip(connections.iter())
+            {
+                let mut values = vec![];
+                values.append(&mut red.clone());
+                values.append(&mut blue.clone());
+                if !do_digits_satisfy_sum(&values, constraint.sum) {
+                    continue 'solutions;
+                }
             }
-            for (i, value) in blue_solution.iter().enumerate() {
-                attempt[blue_to_original_mapping[i]] = *value;
-            }
-            if input.is_possible_solution(&attempt) {
-                solutions.push(attempt);
+            log(format!(
+                "{}  Combining red {:?} and blue {:?} works and yields {}x{} = {} candidates.",
+                log_prefix,
+                red_connecting_values,
+                blue_connecting_values,
+                red_solutions.len(),
+                blue_solutions.len(),
+                red_solutions.len() * blue_solutions.len()
+            ));
+            for red_solution in red_solutions {
+                for blue_solution in blue_solutions {
+                    let mut attempt = vec![0; input.num_cells];
+                    for (i, value) in red_solution.iter().enumerate() {
+                        attempt[red_to_original_mapping[i]] = *value;
+                    }
+                    for (i, value) in blue_solution.iter().enumerate() {
+                        attempt[blue_to_original_mapping[i]] = *value;
+                    }
+                    solutions.push(attempt);
+                }
             }
         }
     }

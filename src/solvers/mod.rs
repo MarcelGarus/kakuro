@@ -20,6 +20,11 @@
 //!   connecting both parts still apply. Both smaller Kakuros are solved in
 //!   isolation and the product of both result sets is filtered to the solutions
 //!   also fulfilling the connecting constraints.
+//! - combine_by_connecting_cells: Like divide, but to merge partial solutions,
+//!   instead of considering the whole product of all solutions, we first group
+//!   them by the connecting cells. We only look at all combinations of
+//!   connecting cells. If we find a match, we then take the product of the
+//!   actual solutions.
 //! - lazy: Like divide, but the recursive solving communicates which parts of
 //!   the board play a role in connecting constraints later on. This allows
 //!   inner calls to not actually construct solutions that are equivalent in
@@ -36,6 +41,7 @@
 //! - combine first by sum, only then by actual numbers
 //! - track the possibility wave like when solving by hand
 
+pub mod combine_by_connecting_cells;
 pub mod connections;
 pub mod divide;
 pub mod gradual;
