@@ -41,4 +41,5 @@ pub mod gradual;
 pub mod lazy;
 pub mod naive;
 pub mod prioritize;
+pub mod prioritize_no_set;
 pub mod sum_reachable;

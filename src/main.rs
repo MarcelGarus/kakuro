@@ -34,6 +34,7 @@ fn main() {
         "gradual" => solvers::gradual::solve(&input),
         "sum_reachable" => solvers::sum_reachable::solve(&input),
         "prioritize" => solvers::prioritize::solve(&input),
+        "prioritize_no_set" => solvers::prioritize_no_set::solve(&input),
         "divide" => solvers::divide::solve(&input),
         "lazy" => solvers::lazy::solve(&input),
         "connections" => solvers::connections::solve(&input),
