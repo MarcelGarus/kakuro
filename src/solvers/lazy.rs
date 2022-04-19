@@ -294,18 +294,18 @@ fn solve_rec(
     let blue_solutions = solve_rec(&blue, &blue_connecting_cells, &inner_log_prefix);
 
     // Combine results.
-    println!(
+    log(format!(
         "{}Combining {}x{} solutions with {} connections.",
         log_prefix,
         red_solutions.len(),
         blue_solutions.len(),
         connections.len(),
-    );
-    println!(
+    ));
+    log(format!(
         "{}Naively joining solutions would require checking {} candidates.",
         log_prefix,
         red_solutions.len() * blue_solutions.len()
-    );
+    ));
     let mut solutions = vec![];
     for (red_connecting_values, red_solution) in &red_solutions {
         'solutions: for (blue_connecting_values, blue_solution) in &blue_solutions {
@@ -336,10 +336,10 @@ fn solve_rec(
                     continue 'solutions;
                 }
             }
-            println!(
+            log(format!(
                 "{}  Combining red {:?} and blue {:?} works.",
                 log_prefix, red_connecting_values, blue_connecting_values,
-            );
+            ));
             let key = connecting_cells
                 .iter()
                 .map(|i| match colors[*i] {
@@ -387,6 +387,6 @@ fn solve_rec(
         })
         .collect();
 
-    println!("{}Done. Found some solutions.", log_prefix);
+    log(format!("{}Done. Found some solutions.", log_prefix));
     solutions
 }
