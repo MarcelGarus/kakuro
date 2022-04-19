@@ -76,11 +76,13 @@ pub fn generate(width: usize, height: usize, numbers: usize) -> board::Board {
     };
 
     let mut rand = rand::thread_rng();
-    while Itertools::flatten(board.iter())
-        .filter(|cell| matches!(cell, Cell::Value(_)))
-        .count()
-        < numbers
-    {
+    let mut tries: usize = 0;
+    fn num_values(board: &[Vec<Cell>]) -> usize {
+        Itertools::flatten(board.iter())
+            .filter(|cell| matches!(cell, Cell::Value(_)))
+            .count()
+    }
+    while num_values(&board) < numbers {
         let x = rand.gen_range(0..width);
         let y = rand.gen_range(0..height);
         let digit: Value = rand.gen_range(1..=9);
@@ -90,8 +92,13 @@ pub fn generate(width: usize, height: usize, numbers: usize) -> board::Board {
         }
         board[y][x] = Cell::Value(digit);
         if !is_board_valid(&board) {
-            println!("Board invalid: {:?}", board);
+            // println!("Board invalid: {:?}", board);
             board[y][x] = Cell::Wall;
+        }
+
+        tries += 1;
+        if tries % 1000 == 0 {
+            println!("{}/{} numbers done", num_values(&board), numbers);
         }
     }
 

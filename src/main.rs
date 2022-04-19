@@ -14,7 +14,14 @@ fn main() {
         .expect("Give the input file as the second argument.");
 
     if solver == "generate" {
-        let board = generate::generate(10, 10, 80);
+        let width: usize = args().nth(3).expect("Give the width.").parse().unwrap();
+        let height: usize = args().nth(4).expect("Give the height.").parse().unwrap();
+        let fill: f64 = args().nth(5).expect("Give the fill.").parse().unwrap();
+        let board = generate::generate(
+            width,
+            height,
+            (width as f64 * height as f64 * fill) as usize,
+        );
         fs::write(input, format!("{}", board).as_bytes()).unwrap();
         return;
     }
