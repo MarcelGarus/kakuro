@@ -166,12 +166,14 @@ impl QuasiSolution {
                 Iterator::flatten(children.into_iter().map(|it| it.build())).collect_vec()
             }
             QuasiSolution::Product { colors, red, blue } => {
-                let mut red = red.build();
-                let mut blue = blue.build();
+                let red = red.build();
+                let blue = blue.build();
                 let mut solutions = vec![];
-                for red in &mut red {
-                    for blue in &mut blue {
+                for red in &red {
+                    for blue in &blue {
                         let mut solution = vec![];
+                        let mut red = red.clone();
+                        let mut blue = blue.clone();
                         for color in &colors {
                             solution.push(match color {
                                 Color::Red => red.remove(0),
