@@ -40,6 +40,7 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "rand",
+ "svg",
 ]
 
 [[package]]
@@ -83,6 +84,12 @@ checksum = "d34f1408f55294453790c48b2f1ebbb1c5b4b7563eb1f418bcfcfdbb06ebb4e7"
 dependencies = [
  "getrandom",
 ]
+
+[[package]]
+name = "svg"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bdb25a4593d6656239319426f4025f7a658157e25e89f0e0319d7516d46042d"
 
 [[package]]
 name = "wasi"

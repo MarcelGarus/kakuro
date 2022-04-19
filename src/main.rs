@@ -3,6 +3,7 @@ mod game;
 mod generate;
 mod log;
 mod solvers;
+mod svg;
 
 use crate::board::*;
 use std::{env::args, fs};
@@ -36,6 +37,11 @@ fn main() {
     println!("Whole board:");
     println!("{}", input);
     println!();
+
+    if solver == "svg" {
+        svg::svg(&input);
+        return;
+    }
 
     let input = input.to_input();
     println!("Abstracted to this:");
