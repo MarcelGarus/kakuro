@@ -9,3 +9,5 @@ debug = true
 [dependencies]
 itertools = "0.7.8"
 rand = "0.8.5"
+structopt = "0.3.25"
+num-bigint = "0.4"
