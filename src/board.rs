@@ -17,10 +17,10 @@ pub struct Board {
 }
 
 pub trait ParseBoard {
-    fn parse_board(&self) -> Board;
+    fn parse_board(&self) -> Result<Board, String>;
 }
 impl ParseBoard for str {
-    fn parse_board(&self) -> Board {
+    fn parse_board(&self) -> Result<Board, String> {
         let cells = self
             .lines()
             .map(|line| {
@@ -54,7 +54,7 @@ impl ParseBoard for str {
                     .collect_vec()
             })
             .collect_vec();
-        Board { cells }
+        Ok(Board { cells })
     }
 }
 
