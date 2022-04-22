@@ -3,6 +3,7 @@ use crate::{
     log::log,
 };
 use itertools::Itertools;
+use num_bigint::{BigUint, ToBigUint};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
@@ -152,9 +153,9 @@ enum QuasiSolution {
     },
 }
 impl QuasiSolution {
-    fn size(&self) -> usize {
+    fn size(&self) -> BigUint {
         match self {
-            QuasiSolution::Concrete(_) => 1,
+            QuasiSolution::Concrete(_) => 1u8.to_biguint().unwrap(),
             QuasiSolution::Plus(children) => children.iter().map(|it| it.size()).sum(),
             QuasiSolution::Product { red, blue, .. } => red.size() * blue.size(),
         }
@@ -206,6 +207,7 @@ pub fn solve(input: &Input) -> Output {
     let mut solutions = solve_rec(input, &vec![], "");
     let solutions = solutions.remove(&vec![]).unwrap();
     log(format!("That are {} solutions.", solutions.size()));
+    // log(format!("{}", &solutions));
     solutions.build()
 }
 
@@ -226,23 +228,26 @@ fn solve_rec(
 
     if matches!(split, None) {
         log(format!("{}Solving with early abort.", log_prefix));
-        let solutions = super::sum_reachable::solve(input);
+        let solutions = super::sum_reachable_no_set::solve(input);
         log(format!(
             "{}Done. Found {} solutions.",
             log_prefix,
             solutions.len()
         ));
-        let grouped = solutions
-            .into_iter()
-            .group_by(|cells| connecting_cells.iter().map(|i| cells[*i]).collect_vec());
-        return grouped
-            .into_iter()
-            .map(|(key, group)| {
-                let solution =
-                    QuasiSolution::Plus(group.map(QuasiSolution::Concrete).collect_vec());
-                (key, solution)
-            })
-            .collect();
+        let mut grouped = HashMap::<Vec<Value>, QuasiSolution>::new();
+        for solution in solutions {
+            let key = connecting_cells.iter().map(|i| solution[*i]).collect_vec();
+            grouped
+                .entry(key)
+                .and_modify(|existing_solution| {
+                    *existing_solution = QuasiSolution::Plus(vec![
+                        QuasiSolution::Concrete(solution.clone()),
+                        existing_solution.clone(),
+                    ]);
+                })
+                .or_insert(QuasiSolution::Concrete(solution));
+        }
+        return grouped;
     }
 
     let mut split = split.unwrap();
@@ -372,23 +377,17 @@ fn solve_rec(
         }
     }
 
-    let solutions = solutions
-        .into_iter()
-        .group_by(|it| it.0.clone())
-        .into_iter()
-        .map(|(key, values)| {
-            let values = values.map(|it| it.1).collect_vec();
-            (
-                key,
-                if values.len() == 0 {
-                    values[0].clone()
-                } else {
-                    QuasiSolution::Plus(values)
-                },
-            )
-        })
-        .collect();
+    let mut grouped = HashMap::<Vec<Value>, QuasiSolution>::new();
+    for (key, solution) in solutions {
+        grouped
+            .entry(key)
+            .and_modify(|existing_solution| {
+                *existing_solution =
+                    QuasiSolution::Plus(vec![solution.clone(), existing_solution.clone()]);
+            })
+            .or_insert(solution);
+    }
 
     log(format!("{}Done. Found some solutions.", log_prefix));
-    solutions
+    grouped
 }

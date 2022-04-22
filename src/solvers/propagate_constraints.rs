@@ -41,7 +41,7 @@ impl Color {
 
 #[derive(Debug)]
 struct SplitInput {
-    // The colors vector has the length of the original input, an assigns each
+    // The colors vector has the length of the original input and assigns each
     // cell a color.
     colors: Vec<Color>,
 
@@ -171,6 +171,48 @@ enum QuasiSolution {
     },
 }
 impl QuasiSolution {
+    fn size(&self) -> usize {
+        match self {
+            QuasiSolution::Concrete(_) => 1,
+            QuasiSolution::Plus(others) => others.iter().map(|it| it.size()).sum(),
+            QuasiSolution::Product { red, blue, .. } => red.size() * blue.size(),
+        }
+    }
+    fn simplify(self) -> Self {
+        match self {
+            QuasiSolution::Concrete(concrete) => QuasiSolution::Concrete(concrete),
+            QuasiSolution::Plus(children) => {
+                let mut children = children.into_iter().map(|it| it.simplify()).collect_vec();
+                if children.len() == 1 {
+                    children.pop().unwrap()
+                } else {
+                    QuasiSolution::Plus(children)
+                }
+            }
+            QuasiSolution::Product { colors, red, blue } => {
+                let red = red.simplify();
+                let blue = blue.simplify();
+                if red.size() == 1 || blue.size() == 1 {
+                    let mut red = red.build().pop().unwrap();
+                    let mut blue = blue.build().pop().unwrap();
+                    let mut solution = vec![];
+                    for color in &colors {
+                        solution.push(match color {
+                            Color::Red => red.remove(0),
+                            Color::Blue => blue.remove(0),
+                        });
+                    }
+                    QuasiSolution::Concrete(solution)
+                } else {
+                    QuasiSolution::Product {
+                        colors,
+                        red: Box::new(red),
+                        blue: Box::new(blue),
+                    }
+                }
+            }
+        }
+    }
     fn build(self) -> Vec<Solution> {
         match self {
             QuasiSolution::Concrete(concrete) => vec![concrete],
@@ -217,7 +259,7 @@ impl QuasiSolution {
                 )?;
             }
             QuasiSolution::Plus(plus) => {
-                writeln!(f, "{}+", indentation)?;
+                writeln!(f, "{}+ -> {}", indentation, self.size())?;
                 for solution in plus {
                     solution.fmt_indented(f, &format!(" {}", indentation))?;
                 }
@@ -225,7 +267,7 @@ impl QuasiSolution {
             QuasiSolution::Product { colors, red, blue } => {
                 writeln!(
                     f,
-                    "{}*{}",
+                    "{}*{} -> {}",
                     indentation,
                     colors
                         .iter()
@@ -233,7 +275,8 @@ impl QuasiSolution {
                             Color::Red => "r",
                             Color::Blue => "b",
                         })
-                        .join("")
+                        .join(""),
+                    self.size()
                 )?;
                 red.fmt_indented(f, &format!(" {}", indentation))?;
                 blue.fmt_indented(f, &format!(" {}", indentation))?;
@@ -399,8 +442,14 @@ pub fn solve(input: &game::Input) -> Output {
         "",
     );
     let solutions = solutions.remove(&vec![]).unwrap();
-    // println!("Solutions:\n{}", solutions);
-    solutions.build()
+    println!("Solutions:\n{}", solutions);
+    println!("There are {} solutions.", solutions.size());
+    println!("Simplified:");
+    let solutions = solutions.simplify();
+    println!("There are {} simple solutions.", solutions.size());
+    println!("{}", &solutions);
+    // solutions.build();
+    vec![]
 }
 
 // Takes a number of cells and all constraints. The additional information of
@@ -415,10 +464,11 @@ fn solve_rec(
     log_prefix: &str,
 ) -> HashMap<Vec<Vec<Value>>, QuasiSolution> {
     log(format!(
-        "{}Solving input with {} cells and {} constraints to pay attention to.",
+        "{}Solving input with {} cells and {} constraints to pay attention to: {:?}",
         log_prefix,
         num_cells,
         all_constraints.len(),
+        all_constraints,
     ));
     let split = split(num_cells, all_constraints);
 
@@ -430,32 +480,27 @@ fn solve_rec(
             log_prefix,
             solutions.len()
         ));
-        let grouped = solutions.into_iter().group_by(|solution| {
-            connecting_constraints
+        let mut grouped = HashMap::<Vec<Vec<Value>>, QuasiSolution>::new();
+        for solution in solutions {
+            let key = connecting_constraints
                 .iter()
                 .map(|connection| {
                     let mut cells = connection.cells.iter().map(|i| solution[*i]).collect_vec();
                     cells.sort();
                     cells
                 })
-                .collect_vec()
-        });
-        return grouped
-            .into_iter()
-            .map(|(key, group)| {
-                let group = group.collect_vec();
-                let solution = QuasiSolution::Plus(
-                    group
-                        .into_iter()
-                        .map(|solution| {
-                            assert!(!solution.is_empty());
-                            QuasiSolution::Concrete(solution)
-                        })
-                        .collect_vec(),
-                );
-                (key, solution)
-            })
-            .collect();
+                .collect_vec();
+            grouped
+                .entry(key)
+                .and_modify(|existing_solution| {
+                    *existing_solution = QuasiSolution::Plus(vec![
+                        QuasiSolution::Concrete(solution.clone()),
+                        existing_solution.clone(),
+                    ]);
+                })
+                .or_insert(QuasiSolution::Concrete(solution));
+        }
+        return grouped;
     }
 
     let mut split = split.unwrap();
@@ -565,21 +610,24 @@ fn solve_rec(
         }
     }
 
-    let solutions = solutions
-        .into_iter()
-        .group_by(|it| it.0.clone())
-        .into_iter()
-        .map(|(key, values)| {
-            let values = values.map(|it| it.1).collect_vec();
-            let solution = if values.is_empty() {
-                values[0].clone()
-            } else {
-                QuasiSolution::Plus(values)
-            };
-            (key, solution)
-        })
-        .collect();
+    let mut grouped = HashMap::<Vec<Vec<Value>>, QuasiSolution>::new();
+    for (key, solution) in solutions {
+        grouped
+            .entry(key)
+            .and_modify(|existing_solution| {
+                *existing_solution =
+                    QuasiSolution::Plus(vec![solution.clone(), existing_solution.clone()]);
+            })
+            .or_insert(solution);
+    }
 
-    log(format!("{}Done. Found some solutions.", log_prefix));
-    solutions
+    log(format!(
+        "{}Done. Found {} solutions.",
+        log_prefix,
+        grouped
+            .iter()
+            .map(|(_, solution)| solution.size())
+            .sum::<usize>()
+    ));
+    grouped
 }
