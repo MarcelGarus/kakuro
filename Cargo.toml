@@ -9,4 +9,3 @@ debug = true
 [dependencies]
 itertools = "0.7.8"
 rand = "0.8.5"
-svg = "0.8.1"
