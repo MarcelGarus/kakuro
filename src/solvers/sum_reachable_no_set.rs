@@ -64,7 +64,7 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
                     None => "-".to_string(),
                 }
             })
-            .collect::<String>()
+            .join("")
     ));
     if !input.is_possible_solution(attempt) {
         return;
@@ -77,7 +77,6 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
         }
         attempt[index] = None;
     } else {
-        // This is a solution.
         solutions.push(attempt.iter().map(|cell| cell.unwrap()).collect());
     }
 }
