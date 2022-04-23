@@ -15,6 +15,9 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "kakuro", about = "A Kakuro tool.")]
 enum KakuroOptions {
+    /// Generates a new Kakuro with the given width and height. The fill
+    /// indicates what percentage of the cells should be empty vs. walls. For
+    /// example, a fill of 0.1 indicates that 10% of cells should be empty.
     Generate {
         width: usize,
         height: usize,
@@ -23,22 +26,30 @@ enum KakuroOptions {
         #[structopt(parse(from_os_str))]
         out: PathBuf,
     },
+    /// Imports a JSON Kakuro from kakuros.com, which you can get by looking at
+    /// the source code. Compared to Kakuros generated using this tool, they are
+    /// guaranteed to have a unique solution.
     Import {
         #[structopt(parse(from_os_str))]
         file: PathBuf,
     },
+    /// Solves a Kakuro with the given solver.
     Solve {
         solver: String,
 
         #[structopt(parse(from_os_str))]
         file: PathBuf,
     },
+    /// Benchmarks the given solver on a bunch of example Kakuros, or only the
+    /// one given. Measures the runtime several times and prints information
+    /// about the median and standard deviation.
     Bench {
         solver: String,
 
         #[structopt(parse(from_os_str))]
         file: Option<PathBuf>,
     },
+    /// Converts a Kakuro to an SVG.
     Svg {
         #[structopt(parse(from_os_str))]
         file: PathBuf,
