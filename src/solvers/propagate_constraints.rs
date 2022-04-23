@@ -442,14 +442,13 @@ pub fn solve(input: &game::Input) -> Output {
         "",
     );
     let solutions = solutions.remove(&vec![]).unwrap();
-    println!("Solutions:\n{}", solutions);
-    println!("There are {} solutions.", solutions.size());
-    println!("Simplified:");
+    log(format!("Solutions:\n{}", solutions));
+    log(format!("There are {} solutions.", solutions.size()));
+    log(format!("Simplified:"));
     let solutions = solutions.simplify();
-    println!("There are {} simple solutions.", solutions.size());
-    println!("{}", &solutions);
-    // solutions.build();
-    vec![]
+    log(format!("There are {} simple solutions.", solutions.size()));
+    log(format!("{}", &solutions));
+    solutions.build()
 }
 
 // Takes a number of cells and all constraints. The additional information of
