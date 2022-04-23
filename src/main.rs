@@ -101,7 +101,7 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "prioritize_no_set" => solvers::prioritize_no_set::solve(&input),
         "sum_reachable_no_set" => solvers::sum_reachable_no_set::solve(&input),
         "divide" => solvers::divide::solve(&input),
-        "combine_by_connecting_cells" => solvers::combine_by_connecting_cells::solve(&input),
+        "connecting_cells" => solvers::connecting_cells::solve(&input),
         "lazy" => solvers::lazy::solve(&input),
         "propagate_constraints" => solvers::propagate_constraints::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
