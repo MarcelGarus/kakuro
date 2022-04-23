@@ -29,6 +29,9 @@ enum KakuroOptions {
     },
     Bench {
         solver: String,
+
+        #[structopt(parse(from_os_str))]
+        file: Option<PathBuf>,
     },
     Svg {
         #[structopt(parse(from_os_str))]
@@ -48,7 +51,7 @@ fn main() {
             out,
         } => generate(width, height, fill, out),
         KakuroOptions::Solve { solver, file } => solve(solver, file),
-        KakuroOptions::Bench { solver } => benchmark(solver),
+        KakuroOptions::Bench { solver, file } => benchmark(solver, file),
         KakuroOptions::Svg { file, out } => svg(&file, &out),
     }
 }
@@ -108,7 +111,7 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
     }
 }
 
-fn benchmark(solver: String) {
+fn benchmark(solver: String, file: Option<PathBuf>) {
     fn debug_warning() -> bool {
         println!("WARNING: You are running this binary in debug mode.");
         println!("Compile with `cargo build --release` to get a binary actually worth measuring.");
@@ -117,18 +120,28 @@ fn benchmark(solver: String) {
     }
     debug_assert!(debug_warning());
 
-    const BENCHMARK_SUITE: [&'static str; 4] = [
+    const BENCHMARK_SUITE: [&'static str; 7] = [
         "examples/mini.kakuro",
         "examples/small.kakuro",
         "examples/wikipedia.kakuro",
+        "examples/15x15.kakuro",
+        "examples/20x20.kakuro",
+        "examples/30x30.kakuro",
         "examples/book.kakuro",
     ];
     const NUM_RUNS: usize = 10;
 
-    let inputs = BENCHMARK_SUITE
-        .iter()
-        .map(|path| read_kakuro(&PathBuf::from(path)).to_input())
-        .collect_vec();
+    let inputs = if let Some(file) = file {
+        vec![file]
+    } else {
+        BENCHMARK_SUITE
+            .iter()
+            .map(|path| PathBuf::from(path))
+            .collect_vec()
+    }
+    .into_iter()
+    .map(|file| read_kakuro(&file).to_input())
+    .collect_vec();
 
     for (i, input) in inputs.iter().enumerate() {
         println!("Input {}.", BENCHMARK_SUITE[i]);
