@@ -23,6 +23,7 @@ impl ParseBoard for str {
     fn parse_board(&self) -> Result<Board, String> {
         let cells = self
             .lines()
+            .filter(|line| !line.is_empty() && !line.starts_with('#'))
             .map(|line| {
                 line.split(' ')
                     .filter(|word| !word.is_empty())
