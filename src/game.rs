@@ -127,7 +127,7 @@ impl Input {
         if attempt.len() != self.num_cells {
             return false;
         }
-        if !attempt.iter().all(|i| *i >= 1 && *i <= 9) {
+        if !attempt.iter().all(|i| (1..=9).contains(i)) {
             return false;
         }
         for constraint in self.constraints.iter() {
@@ -137,7 +137,7 @@ impl Input {
                 .map(|b| attempt[*b])
                 .collect::<HashSet<_>>();
             if cell_values.len() < constraint.cells.len() {
-                return false; // A number appears twice.
+                return false; // A digit appears twice.
             }
             let sum = cell_values.into_iter().reduce(|a, b| a + b).unwrap();
             if sum != constraint.sum {
