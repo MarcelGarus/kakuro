@@ -143,6 +143,15 @@ fn benchmark(solver: String, file: Option<PathBuf>) {
     .map(|file| read_kakuro(&file).to_input())
     .collect_vec();
 
+    // Warm up for 10 seconds.
+    println!("Warming up.");
+    let warmup_start = chrono::Utc::now();
+    while chrono::Utc::now() < warmup_start + chrono::Duration::seconds(10) {
+        let input = &inputs[0];
+        raw_solve(&solver, &input);
+    }
+    println!();
+
     for (i, input) in inputs.iter().enumerate() {
         println!("Input {}.", BENCHMARK_SUITE[i]);
         let mut durations = vec![];
