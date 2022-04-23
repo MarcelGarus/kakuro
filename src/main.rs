@@ -7,7 +7,7 @@ mod svg;
 
 use crate::{board::*, game::Input};
 use itertools::Itertools;
-use std::{fs, path::PathBuf, time::Instant};
+use std::{fs, io::Write, path::PathBuf, time::Instant};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -156,12 +156,18 @@ fn benchmark(solver: String, file: Option<PathBuf>) {
         println!("Input {}.", BENCHMARK_SUITE[i]);
         let mut durations = vec![];
         for i in 0..NUM_RUNS {
-            print!("Run {}/{}", i, NUM_RUNS);
+            print!(
+                "Solving run {}/{} started at {}.",
+                i,
+                NUM_RUNS,
+                chrono::Local::now()
+            );
+            std::io::stdout().flush().expect("Couldn't flush stdout.");
             let before = Instant::now();
             raw_solve(&solver, &input);
             let after = Instant::now();
             let runtime = after - before;
-            println!(" took {} seconds.", runtime.as_secs_f64());
+            println!(" It took {} seconds.", runtime.as_secs_f64());
             durations.push(after - before);
         }
         let durations = durations
