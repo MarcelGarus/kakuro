@@ -172,12 +172,14 @@ fn benchmark(solver: String, file: Option<PathBuf>) {
         }
         let durations = durations
             .into_iter()
-            .map(|duration| duration.as_micros())
+            .map(|duration| duration.as_nanos())
             .collect_vec();
         println!(
-            "{} +- {} micro seconds",
+            "{} +- {} % nano seconds; {} - {} nano seconds",
             mean(&durations).unwrap(),
-            std_deviation(&durations).unwrap()
+            std_deviation(&durations).unwrap() / mean(&durations).unwrap() * 100.0,
+            durations.iter().min().unwrap(),
+            durations.iter().max().unwrap(),
         );
         println!();
     }
