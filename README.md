@@ -16,7 +16,6 @@ naive                 |  18.29 s  | TIMEOUT   | TODO      | TODO      | TODO    
 gradual               |   4.79 ms |   5.17 s  | 599.65 s  | TODO      | TODO       |    TIMEOUT |
 sum_reachable         |   2.31 ms |  39.96 ms | 148.44 ms |   1.57 s  | 101.653 s  | 137.72 s   |
 prioritize            |   1.39 ms | 434.67 ms | 543.49 ms | 400.71 s  | TIMEOUT    | 695.64 s   |
-prioritize_no_set     | 390.22 us | 176.44 ms | 202.68 ms | 116.23 s  | TIMEOUT    | TODO       |
 sum_reachable_no_set  | 691.78 us |  10.64 ms |  51.78 ms | 449.40 ms |   45.45 s  |  38.98 s   |
 divide                |  37.40 us |   2.45 ms |  12.51 ms | 121.02 ms |    5.22 s  | OOM        |
 connecting_cells      |  47.37 us |   1.77 ms |  12.30 ms |  34.40 ms |  550.77 ms | OOM        |
@@ -49,12 +48,6 @@ The values are median with standard deviation, as well as minimum and maximum.
   - book: 695.638 s +- 0.78%; 689.53 - 704.844 s
   - 20x20: 400.710 s +- 0.62%; 394.727 - 403.980 s
   - 30x30: >42 min
-- prioritize_no_set
-  - small: 390.224 us +- 0.48%; 384.884 - 390.224 us
-  - wikipedia: 176.435 ms *- 0.27%; 175.396 - 177.396 ms
-  - 15x15: 202.682 ms +- 0.62%; 200.88 - 205.62 ms
-  - 20x20: 116.231 s +- 0.93%; 115.368 - 118.383 s
-  - 30x30: >69 min
 - sum_reachable_no_set
   - small: 691.776 us +- 0.47%; 687.491 - 697.260 us
   - wikipedia: 10.638 ms +- 0.29%; 10.563 - 10.669 ms

@@ -11,8 +11,6 @@
 //! - prioritize: Like sum_reachable, but doesn't just fill the cells in the
 //!   arbitrary order that they were numbered in. Instead, it fills the first
 //!   cell and then cells in rows and columns that already contain numbers.
-//! - prioritize_no_set: Like prioritize, but without using HashSets to check
-//!   for uniqueness.
 //! - sum_reachable_no_set: Like sum_reachable, but without using HashSets to
 //!   check for uniqueness.
 //! - divide: This solver divides a big Kakuro into two smaller ones that are
@@ -45,7 +43,6 @@ pub mod gradual;
 pub mod lazy;
 pub mod naive;
 pub mod prioritize;
-pub mod prioritize_no_set;
 pub mod propagate_constraints;
 pub mod sum_reachable;
 pub mod sum_reachable_no_set;

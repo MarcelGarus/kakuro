@@ -132,7 +132,6 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "gradual" => solvers::gradual::solve(&input),
         "sum_reachable" => solvers::sum_reachable::solve(&input),
         "prioritize" => solvers::prioritize::solve(&input),
-        "prioritize_no_set" => solvers::prioritize_no_set::solve(&input),
         "sum_reachable_no_set" => solvers::sum_reachable_no_set::solve(&input),
         "divide" => solvers::divide::solve(&input),
         "connecting_cells" => solvers::connecting_cells::solve(&input),
