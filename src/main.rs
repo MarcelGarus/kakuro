@@ -1,11 +1,13 @@
 mod board;
 mod game;
 mod generate;
+mod import;
 mod log;
 mod solvers;
 mod svg;
 
 use crate::{board::*, game::Input};
+use import::ImportJsonBoard;
 use itertools::Itertools;
 use std::{fs, io::Write, path::PathBuf, time::Instant};
 use structopt::StructOpt;
@@ -20,6 +22,10 @@ enum KakuroOptions {
 
         #[structopt(parse(from_os_str))]
         out: PathBuf,
+    },
+    Import {
+        #[structopt(parse(from_os_str))]
+        file: PathBuf,
     },
     Solve {
         solver: String,
@@ -50,6 +56,7 @@ fn main() {
             fill,
             out,
         } => generate(width, height, fill, out),
+        KakuroOptions::Import { file } => import(file),
         KakuroOptions::Solve { solver, file } => solve(solver, file),
         KakuroOptions::Bench { solver, file } => benchmark(solver, file),
         KakuroOptions::Svg { file, out } => svg(&file, &out),
@@ -62,6 +69,19 @@ fn generate(width: usize, height: usize, fill: f64, out: PathBuf) {
         height,
         (width as f64 * height as f64 * fill) as usize,
     );
+    fs::write(out, format!("{}", board).as_bytes()).unwrap();
+}
+
+fn import(file: PathBuf) {
+    let input = fs::read(file.clone()).expect(&format!("Couldn't read file: {:?}", file));
+    let input =
+        String::from_utf8(input).expect(&format!("The file {:?} contains non-UTF8 chars.", file));
+    let board = input.import_json().expect(&format!(
+        "The file {:?} doesn't contain a valid JSON Kakuro.",
+        file
+    ));
+    let mut out = file;
+    assert!(out.set_extension("kakuro"));
     fs::write(out, format!("{}", board).as_bytes()).unwrap();
 }
 
