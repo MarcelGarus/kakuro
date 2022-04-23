@@ -3,6 +3,7 @@
 //! that are imposed on subsets of the cells.
 
 use crate::board::{self, Board, Cell};
+use itertools::Itertools;
 use std::{
     collections::{HashMap, HashSet},
     fmt::{self, Display, Formatter},
@@ -127,20 +128,19 @@ impl Input {
         if attempt.len() != self.num_cells {
             return false;
         }
-        if !attempt.iter().all(|i| (1..=9).contains(i)) {
+        if !attempt.iter().all(|number| (1..=9).contains(number)) {
             return false;
         }
+
         for constraint in self.constraints.iter() {
-            let cell_values = constraint
-                .cells
-                .iter()
-                .map(|b| attempt[*b])
-                .collect::<HashSet<_>>();
-            if cell_values.len() < constraint.cells.len() {
+            let digits = constraint.cells.iter().map(|i| attempt[*i]).collect_vec();
+            let unique_digits = digits.iter().collect::<HashSet<_>>();
+
+            if unique_digits.len() < digits.len() {
                 return false; // A digit appears twice.
-            }
-            let sum = cell_values.into_iter().reduce(|a, b| a + b).unwrap();
-            if sum != constraint.sum {
+            } else if digits.len() < constraint.cells.len() {
+                continue; // Ignore partially filled out constraints.
+            } else if digits.iter().sum::<Value>() != constraint.sum {
                 return false;
             }
         }

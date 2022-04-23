@@ -13,26 +13,17 @@ trait InputExt {
 }
 impl InputExt for Input {
     fn is_possible_solution(&self, attempt: &Game) -> bool {
-        for constraint in self.constraints.iter() {
-            let cells = constraint
-                .cells
-                .iter()
-                .map(|b| attempt[*b])
-                .collect::<HashSet<_>>();
+        for constraint in &self.constraints {
+            let cells = constraint.cells.iter().map(|i| attempt[*i]).collect_vec();
+            let digits = cells.into_iter().filter_map(|it| it).collect_vec();
+            let unique_digits = digits.iter().collect::<HashSet<_>>();
 
-            if cells.iter().any(|cell| cell.is_none()) {
-                continue; // Ignore partially filled out constraints.
-            } else if cells.len() != constraint.cells.len() {
+            if unique_digits.len() < digits.len() {
                 return false; // A digit appears twice.
-            } else {
-                let sum = cells
-                    .into_iter()
-                    .map(|a| a.unwrap())
-                    .reduce(|a, b| a + b)
-                    .unwrap();
-                if sum != constraint.sum {
-                    return false;
-                }
+            } else if digits.len() < constraint.cells.len() {
+                continue; // Ignore partially filled out constraints.
+            } else if digits.iter().sum::<Value>() != constraint.sum {
+                return false;
             }
         }
         return true;

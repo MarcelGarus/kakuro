@@ -18,7 +18,7 @@ pub fn solve(input: &Input) -> Output {
             solutions.push(attempt.clone());
         }
 
-        // Increase attempt by one, interpreted as a binary number.
+        // Increase attempt by one, interpreted as a single number.
         let mut i = attempt.len() - 1;
         loop {
             attempt[i] += 1;

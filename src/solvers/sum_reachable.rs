@@ -3,7 +3,7 @@ use crate::{
     log::log,
 };
 use itertools::Itertools;
-use std::collections::HashSet;
+use std::{collections::HashSet, iter::FromIterator};
 
 type Game = Vec<Cell>;
 type Cell = Option<Value>;
@@ -14,25 +14,22 @@ trait InputExt {
 impl InputExt for Input {
     fn is_possible_solution(&self, attempt: &Game) -> bool {
         for constraint in self.constraints.iter() {
-            let cells = constraint.cells.iter().map(|b| attempt[*b]).collect_vec();
+            let cells = constraint.cells.iter().map(|i| attempt[*i]).collect_vec();
             let digits = cells.into_iter().filter_map(|it| it).collect_vec();
-            let len = digits.len();
+            let unique_digits = digits.clone().into_iter().collect::<HashSet<_>>();
 
-            let digits = digits.into_iter().collect::<HashSet<_>>();
-            if digits.len() < len {
+            if unique_digits.len() < digits.len() {
                 return false; // A digit appears twice.
+            }
+            if digits.is_empty() {
+                continue; // No cells filled out yet; we assume the constraint is satisfiable.
             }
 
             let sum: Value = digits.iter().sum();
-            if sum == 0 {
-                continue; // No cells filled in yet; we assume the attempt is possible.
-            }
-
-            let unused_digits = (1..=9u8)
-                .collect::<HashSet<_>>()
-                .difference(&digits)
-                .map(|it| *it)
-                .collect::<HashSet<Value>>();
+            let unused_digits: HashSet<Value> = HashSet::from_iter(1..=9)
+                .difference(&unique_digits)
+                .map(|digit| *digit)
+                .collect();
             let is_sum_reachable = unused_digits
                 .into_iter()
                 .combinations(constraint.cells.len() - digits.len())
