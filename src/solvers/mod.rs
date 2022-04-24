@@ -32,6 +32,9 @@
 //!   the minimum/maximum sum that one part should have. For example, if a
 //!   connecting constraint with one cell in either part has a sum of 6, then
 //!   the values in each part can only be between 1 and 5.
+//! - only_check_changes: Like sum_reachable_no_set, but it doesn't check the
+//!   entire Kakuro after a digit was filled in. Instead, it only checks the
+//!   affected constraints.
 //!
 //! Ideas:
 //! - combine first by sum, only then by actual numbers
@@ -42,6 +45,7 @@ pub mod divide;
 pub mod gradual;
 pub mod lazy;
 pub mod naive;
+pub mod only_check_changes;
 pub mod prioritize;
 pub mod propagate_constraints;
 pub mod sum_reachable;

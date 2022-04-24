@@ -21,6 +21,7 @@ divide                |  37.40 us |   2.45 ms |  12.51 ms | 121.02 ms |    5.22 
 connecting_cells      |  47.37 us |   1.77 ms |  12.30 ms |  34.40 ms |  550.77 ms | oom        |
 lazy                  |  65.39 us |   2.61 ms |  12.78 ms |  86.40 ms |   11.14 s  | oom        |
 propagate_constraints | 188.25 us |   1.64 ms |  10.25 ms |  43.84 ms | oom        |   1.42 s   |
+only_check_changes    | 201.31 us |   1.35 ms |   5.57 ms |  36.28 ms |    4.22 s  |   3.62 s   |
 
 ## Raw measurements
 
@@ -83,6 +84,13 @@ The values are median with standard deviation, as well as minimum and maximum.
   - 20x20: 43.843 ms +- 0.33%; 43.660 - 44.101 ms
   - 30x30: OOM after 30s
   - book: 1.415 s +- 0.76%; 1.400 - 1.432 s
+- only_check_changes
+  - small: 201.306 us +- 0.69%; 200.287 - 205.166 us
+  - wikipedia: 1.348 ms +- 0.42%; 1.341 - 1.357 ms
+  - 15x15: 5.573 ms +- 0.15%; 5.560 - 5.586 ms
+  - 20x20: 36.277 ms +- 0.22%; 36.198 - 36.460 ms
+  - 30x30: 4.222 s +- 1.07%; 4.132 - 4.290 s
+  - book: 3.623 s +- 0.72%; 3.587 - 3.660 s
 
 ## Todo
 
