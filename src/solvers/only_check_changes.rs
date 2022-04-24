@@ -1,10 +1,9 @@
-use std::collections::HashMap;
-
 use crate::{
     game::{Constraint, Input, Output, Solution, Value},
     log::log,
 };
 use itertools::Itertools;
+use std::collections::HashMap;
 
 type Game = Vec<Cell>;
 type Cell = Option<Value>;
