@@ -35,6 +35,9 @@
 //! - only_check_changes: Like sum_reachable_no_set, but it doesn't check the
 //!   entire Kakuro after a digit was filled in. Instead, it only checks the
 //!   affected constraints.
+//! - solution_in_rc: Like propagate_constraints, but the quasi solutions are
+//!   wrapped in a reference counter. This allows common subtrees of quasi
+//!   solutions to share their memory, reducing allocations.
 //!
 //! Ideas:
 //! - combine first by sum, only then by actual numbers
@@ -48,5 +51,6 @@ pub mod naive;
 pub mod only_check_changes;
 pub mod prioritize;
 pub mod propagate_constraints;
+pub mod solution_in_rc;
 pub mod sum_reachable;
 pub mod sum_reachable_no_set;
