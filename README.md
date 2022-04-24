@@ -7,20 +7,20 @@ This repo contains several solvers with different strategies.
 
 I conducted ten measurements for each value with prior warm-up.
 
-OOM = Out of memory and killed by the operating system  
-TIMEOUT = Took longer than 30 minutes
+oom = Out of memory and killed by the operating system  
+timeout = Took longer than 30 minutes
 
 solver                | small     | wikipedia | 15x15     | 20x20     | 30x30      | book       |
 ----------------------|-----------|-----------|-----------|-----------|------------|------------|
-naive                 |  18.29 s  | TIMEOUT   | TODO      | TODO      | TODO       | TODO       |
-gradual               |   4.79 ms |   5.17 s  | 599.65 s  | TODO      | TODO       |    TIMEOUT |
+naive                 |  18.29 s  | timeout   | TODO      | TODO      | TODO       | TODO       |
+gradual               |   4.79 ms |   5.17 s  | 599.65 s  | TODO      | TODO       | timeout    |
 sum_reachable         |   2.31 ms |  39.96 ms | 148.44 ms |   1.57 s  | 101.653 s  | 137.72 s   |
-prioritize            |   1.39 ms | 434.67 ms | 543.49 ms | 400.71 s  | TIMEOUT    | 695.64 s   |
+prioritize            |   1.39 ms | 434.67 ms | 543.49 ms | 400.71 s  | timeout    | 695.64 s   |
 sum_reachable_no_set  | 691.78 us |  10.64 ms |  51.78 ms | 449.40 ms |   45.45 s  |  38.98 s   |
-divide                |  37.40 us |   2.45 ms |  12.51 ms | 121.02 ms |    5.22 s  | OOM        |
-connecting_cells      |  47.37 us |   1.77 ms |  12.30 ms |  34.40 ms |  550.77 ms | OOM        |
-lazy                  |  65.39 us |   2.61 ms |  12.78 ms |  86.40 ms |   11.14 s  | OOM        |
-propagate_constraints | 188.25 us |   1.64 ms |  10.25 ms |  43.84 ms | OOM        |   1.42 s   |
+divide                |  37.40 us |   2.45 ms |  12.51 ms | 121.02 ms |    5.22 s  | oom        |
+connecting_cells      |  47.37 us |   1.77 ms |  12.30 ms |  34.40 ms |  550.77 ms | oom        |
+lazy                  |  65.39 us |   2.61 ms |  12.78 ms |  86.40 ms |   11.14 s  | oom        |
+propagate_constraints | 188.25 us |   1.64 ms |  10.25 ms |  43.84 ms | oom        |   1.42 s   |
 
 ## Raw measurements
 
