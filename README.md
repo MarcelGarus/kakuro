@@ -102,4 +102,9 @@ The values are median with standard deviation, as well as minimum and maximum.
 
 ## Todo
 
+- better benchmarking output
+- properly disable logging (aaargh)
+- investigate oom -> endless recursive loop?
+- better hashmaps
+- better vecs
 - invent new solvers
