@@ -1,6 +1,6 @@
 use crate::{
     game::{Constraint, Input, Output, Solution, Value},
-    log::log,
+    log,
 };
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -159,30 +159,27 @@ pub fn solve(input: &Input) -> Output {
 }
 
 fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
-    log(format!(
+    log!(
         "{}Solving input with {} cells and {} constraints.",
         log_prefix,
         input.num_cells,
         input.constraints.len(),
-    ));
+    );
     let split = split(input);
 
     if split.is_none() {
-        log(format!("{}Solving with simple solver.", log_prefix));
+        log!("{}Solving with simple solver.", log_prefix);
         let solutions = super::sum_reachable_no_set::solve(input);
-        log(format!(
-            "{}Done. Found {} solutions.",
-            log_prefix,
-            solutions.len()
-        ));
+        log!("{}Done. Found {} solutions.", log_prefix, solutions.len());
         return solutions;
     }
 
     let mut split = split.unwrap();
-    log(format!(
+    log!(
         "{}Split with connections: {:?}",
-        log_prefix, split.connections
-    ));
+        log_prefix,
+        split.connections
+    );
     if split.red.num_cells > split.blue.num_cells {
         split = split.flip();
     }
@@ -210,18 +207,18 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
     let blue_solutions = solve_rec(&blue, &inner_log_prefix);
 
     // Combine results.
-    log(format!(
+    log!(
         "{}Combining {}x{} solutions with {} connections.",
         log_prefix,
         red_solutions.len(),
         blue_solutions.len(),
         connections.len(),
-    ));
-    log(format!(
+    );
+    log!(
         "{}Naively joining solutions would require checking {} candidates.",
         log_prefix,
         red_solutions.len() * blue_solutions.len()
-    ));
+    );
 
     fn get_solutions_by_sums(
         solutions: Vec<Solution>,
@@ -281,7 +278,7 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
                     continue 'solutions;
                 }
             }
-            log(format!(
+            log!(
                 "{}  Combining red {:?} and blue {:?} works and yields {}x{} = {} candidates.",
                 log_prefix,
                 red_connecting_values,
@@ -289,7 +286,7 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
                 red_solutions.len(),
                 blue_solutions.len(),
                 red_solutions.len() * blue_solutions.len()
-            ));
+            );
             for red_solution in red_solutions {
                 for blue_solution in blue_solutions {
                     let mut attempt = vec![0; input.num_cells];
@@ -305,10 +302,6 @@ fn solve_rec(input: &Input, log_prefix: &str) -> Vec<Solution> {
         }
     }
 
-    log(format!(
-        "{}Done. Found {} solutions.",
-        log_prefix,
-        solutions.len()
-    ));
+    log!("{}Done. Found {} solutions.", log_prefix, solutions.len());
     solutions
 }

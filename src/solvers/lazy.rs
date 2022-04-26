@@ -1,6 +1,6 @@
 use crate::{
     game::{Constraint, Input, Output, Solution, Value},
-    log::log,
+    log,
 };
 use itertools::Itertools;
 use num_bigint::{BigUint, ToBigUint};
@@ -206,8 +206,8 @@ fn do_digits_satisfy_sum(digits: &[Value], sum: Value) -> bool {
 pub fn solve(input: &Input) -> Output {
     let mut solutions = solve_rec(input, &vec![], "");
     let solutions = solutions.remove(&vec![]).unwrap();
-    log(format!("That are {} solutions.", solutions.size()));
-    // log(format!("{}", &solutions));
+    log!("That are {} solutions.", solutions.size());
+    // log!("{}", &solutions);
     solutions.build()
 }
 
@@ -216,24 +216,20 @@ fn solve_rec(
     connecting_cells: &[usize],
     log_prefix: &str,
 ) -> HashMap<Vec<Value>, QuasiSolution> {
-    log(format!(
+    log!(
         "{}Solving input with {} cells, {} constraints, and {} connecting cells {:?} to pay attention to.",
         log_prefix,
         input.num_cells,
         input.constraints.len(),
         connecting_cells.len(),
         connecting_cells,
-    ));
+    );
     let split = split(input);
 
     if matches!(split, None) {
-        log(format!("{}Solving with early abort.", log_prefix));
+        log!("{}Solving with early abort.", log_prefix);
         let solutions = super::sum_reachable_no_set::solve(input);
-        log(format!(
-            "{}Done. Found {} solutions.",
-            log_prefix,
-            solutions.len()
-        ));
+        log!("{}Done. Found {} solutions.", log_prefix, solutions.len());
         let mut grouped = HashMap::<Vec<Value>, QuasiSolution>::new();
         for solution in solutions {
             let key = connecting_cells.iter().map(|i| solution[*i]).collect_vec();
@@ -251,14 +247,15 @@ fn solve_rec(
     }
 
     let mut split = split.unwrap();
-    log(format!(
+    log!(
         "{}Split with connections: {:?}",
-        log_prefix, split.connections
-    ));
+        log_prefix,
+        split.connections
+    );
     if split.red.num_cells > split.blue.num_cells {
         split = split.flip();
     }
-    log(format!("{}Mask: {:?}", log_prefix, split.colors));
+    log!("{}Mask: {:?}", log_prefix, split.colors);
     let SplitInput {
         colors,
         index_mapping,
@@ -301,18 +298,18 @@ fn solve_rec(
     let blue_solutions = solve_rec(&blue, &blue_connecting_cells, &inner_log_prefix);
 
     // Combine results.
-    log(format!(
+    log!(
         "{}Combining {}x{} solutions with {} connections.",
         log_prefix,
         red_solutions.len(),
         blue_solutions.len(),
         connections.len(),
-    ));
-    log(format!(
+    );
+    log!(
         "{}Naively joining solutions would require checking {} candidates.",
         log_prefix,
         red_solutions.len() * blue_solutions.len()
-    ));
+    );
     let mut solutions = vec![];
     for (red_connecting_values, red_solution) in &red_solutions {
         'solutions: for (blue_connecting_values, blue_solution) in &blue_solutions {
@@ -343,10 +340,12 @@ fn solve_rec(
                     continue 'solutions;
                 }
             }
-            log(format!(
+            log!(
                 "{}  Combining red {:?} and blue {:?} works.",
-                log_prefix, red_connecting_values, blue_connecting_values,
-            ));
+                log_prefix,
+                red_connecting_values,
+                blue_connecting_values,
+            );
             let key = connecting_cells
                 .iter()
                 .map(|i| match colors[*i] {
@@ -388,6 +387,6 @@ fn solve_rec(
             .or_insert(solution);
     }
 
-    log(format!("{}Done. Found some solutions.", log_prefix));
+    log!("{}Done. Found some solutions.", log_prefix);
     grouped
 }

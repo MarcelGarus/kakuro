@@ -1,6 +1,6 @@
 use crate::{
     game::{Constraint, Input, Output, Solution, Value},
-    log::log,
+    log,
 };
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -61,7 +61,7 @@ fn solve_rec(
     attempt: &mut Game,
     solutions: &mut Vec<Solution>,
 ) {
-    log(format!(
+    log!(
         "Evaluating attempt {}",
         attempt
             .iter()
@@ -72,7 +72,7 @@ fn solve_rec(
                 }
             })
             .join("")
-    ));
+    );
 
     let first_empty_cell_index = attempt.iter().position(|it| it.is_none());
     if let Some(index) = first_empty_cell_index {

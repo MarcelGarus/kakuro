@@ -1,7 +1,15 @@
-const LOGGING: bool = false;
+pub const LOGGING: bool = true;
 
-pub fn log(message: String) {
-    if LOGGING {
-        println!("{}", message);
-    }
+#[macro_export]
+macro_rules! log {
+    () => {
+        if $crate::log::LOGGING {
+            std::println!()
+        }
+    };
+    ($($arg:tt)*) => {
+        if $crate::log::LOGGING {
+            std::println!($($arg)*)
+        }
+    };
 }

@@ -1,6 +1,6 @@
 use crate::{
     game::{Input, Output, Solution, Value},
-    log::log,
+    log,
 };
 use itertools::Itertools;
 use std::collections::HashSet;
@@ -54,7 +54,7 @@ pub fn solve(input: &Input) -> Output {
 }
 
 fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
-    log(format!(
+    log!(
         "Evaluating attempt {}",
         attempt
             .iter()
@@ -65,7 +65,7 @@ fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
                 }
             })
             .join("")
-    ));
+    );
 
     if !input.is_possible_solution(attempt) {
         return;

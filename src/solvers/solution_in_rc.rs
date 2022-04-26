@@ -1,6 +1,6 @@
 use crate::{
     game::{self, Output, Solution, Value},
-    log::log,
+    log,
 };
 use itertools::Itertools;
 use std::{
@@ -364,7 +364,7 @@ mod simple_solver {
         attempt: &mut Game,
         solutions: &mut Vec<Solution>,
     ) {
-        log(format!(
+        log!(
             "Evaluating attempt {}",
             attempt
                 .iter()
@@ -375,7 +375,7 @@ mod simple_solver {
                     }
                 })
                 .join("")
-        ));
+        );
 
         let first_empty_cell_index = attempt.iter().position(|it| it.is_none());
         if let Some(index) = first_empty_cell_index {
@@ -473,12 +473,12 @@ pub fn solve(input: &game::Input) -> Output {
         "",
     );
     let solutions = solutions.remove(&vec![]).unwrap();
-    log(format!("Solutions:\n{}", solutions));
-    log(format!("There are {} solutions.", solutions.size()));
-    log(format!("Simplified:"));
+    // log!("Solutions:\n{}", solutions));
+    // log!("There are {} solutions.", solutions.size()));
+    // log!("Simplified:"));
     let solutions = solutions.simplify();
-    log(format!("There are {} simple solutions.", solutions.size()));
-    log(format!("{}", &solutions));
+    // log!("There are {} simple solutions.", solutions.size()));
+    // log!("{}", &solutions));
     solutions.build()
 }
 
@@ -493,23 +493,19 @@ fn solve_rec(
     connecting_constraints: &[Constraint],
     log_prefix: &str,
 ) -> HashMap<Vec<Vec<Value>>, Rc<QuasiSolution>> {
-    log(format!(
+    log!(
         "{}Solving input with {} cells and {} constraints to pay attention to: {:?}",
         log_prefix,
         num_cells,
         all_constraints.len(),
         all_constraints,
-    ));
+    );
     let split = split(num_cells, all_constraints);
 
     if split.is_none() {
-        log(format!("{}Solving with simple algorithm.", log_prefix));
+        log!("{}Solving with simple algorithm.", log_prefix);
         let solutions = simple_solver::solve(num_cells, all_constraints);
-        log(format!(
-            "{}Done. Found {} solutions.",
-            log_prefix,
-            solutions.len()
-        ));
+        log!("{}Done. Found {} solutions.", log_prefix, solutions.len());
         let mut grouped = HashMap::<Vec<Vec<Value>>, Rc<QuasiSolution>>::new();
         for solution in solutions {
             let key = connecting_constraints
@@ -534,16 +530,17 @@ fn solve_rec(
     }
 
     let mut split = split.unwrap();
-    log(format!(
+    log!(
         "{}Split with connections: {:?}",
-        log_prefix, split.connections
-    ));
+        log_prefix,
+        split.connections
+    );
     let more_red_than_blue =
         split.colors.iter().filter(|it| **it == Color::Red).count() > num_cells / 2;
     if more_red_than_blue {
         split = split.flip();
     }
-    log(format!("{}Mask: {:?}", log_prefix, split.colors));
+    log!("{}Mask: {:?}", log_prefix, split.colors);
     let SplitInput {
         colors,
         index_mapping,
@@ -588,18 +585,18 @@ fn solve_rec(
     );
 
     // Combine results.
-    log(format!(
+    log!(
         "{}Combining {}x{} solutions with {} connections.",
         log_prefix,
         red_solutions.len(),
         blue_solutions.len(),
         split_connecting_constraints.len(),
-    ));
-    log(format!(
+    );
+    log!(
         "{}Naively joining solutions would require checking {} candidates.",
         log_prefix,
         red_solutions.len() * blue_solutions.len()
-    ));
+    );
     let mut solutions = vec![];
     for (red_connecting_values, red_solution) in &red_solutions {
         'solutions: for (blue_connecting_values, blue_solution) in &blue_solutions {
@@ -621,10 +618,12 @@ fn solve_rec(
                     continue 'solutions;
                 }
             }
-            log(format!(
+            log!(
                 "{}  Combining red {:?} and blue {:?} works.",
-                log_prefix, red_connecting_values, blue_connecting_values,
-            ));
+                log_prefix,
+                red_connecting_values,
+                blue_connecting_values,
+            );
             let key = connecting_constraints
                 .iter()
                 .zip(red_connecting_values)
@@ -653,13 +652,13 @@ fn solve_rec(
             .or_insert(solution);
     }
 
-    log(format!(
+    log!(
         "{}Done. Found {} solutions.",
         log_prefix,
         grouped
             .iter()
             .map(|(_, solution)| solution.size())
             .sum::<usize>()
-    ));
+    );
     grouped
 }

@@ -1,6 +1,6 @@
 use crate::{
     game::{Input, Output},
-    log::log,
+    log,
 };
 use itertools::Itertools;
 
@@ -9,10 +9,10 @@ pub fn solve(input: &Input) -> Output {
     let mut solutions = vec![];
 
     'search: loop {
-        log(format!(
+        log!(
             "Evaluating attempt {}",
             attempt.iter().map(|digit| format!("{}", digit)).join("")
-        ));
+        );
 
         if input.is_solution(&attempt) {
             solutions.push(attempt.clone());
