@@ -1,3 +1,5 @@
+#![feature(path_file_prefix)]
+
 mod board;
 mod game;
 mod generate;
@@ -48,6 +50,9 @@ enum KakuroOptions {
 
         #[structopt(parse(from_os_str))]
         file: Option<PathBuf>,
+
+        #[structopt(long)]
+        warm_up: bool,
     },
     /// Converts a Kakuro to an SVG.
     Svg {
@@ -69,7 +74,11 @@ fn main() {
         } => generate(width, height, fill, out),
         KakuroOptions::Import { file } => import(file),
         KakuroOptions::Solve { solver, file } => solve(solver, file),
-        KakuroOptions::Bench { solver, file } => benchmark(solver, file),
+        KakuroOptions::Bench {
+            solver,
+            file,
+            warm_up,
+        } => benchmark(solver, file, warm_up),
         KakuroOptions::Svg { file, out } => svg(&file, &out),
     }
 }
@@ -143,7 +152,7 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
     }
 }
 
-fn benchmark(solver: String, file: Option<PathBuf>) {
+fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool) {
     fn debug_warning() -> bool {
         println!("WARNING: You are running this binary in debug mode.");
         println!("Compile with `cargo build --release` to get a binary actually worth measuring.");
@@ -163,7 +172,7 @@ fn benchmark(solver: String, file: Option<PathBuf>) {
     ];
     const NUM_RUNS: usize = 10;
 
-    let inputs = if let Some(file) = file {
+    let (inputs) = if let Some(file) = file {
         vec![file]
     } else {
         BENCHMARK_SUITE
@@ -172,19 +181,23 @@ fn benchmark(solver: String, file: Option<PathBuf>) {
             .collect_vec()
     }
     .into_iter()
-    .map(|file| read_kakuro(&file).to_input())
+    .map(|file| (format!("{}", file.display()), read_kakuro(&file).to_input()))
     .collect_vec();
 
     // Warm up for 10 seconds.
-    println!("Warming up.");
-    let warmup_start = chrono::Utc::now();
-    while chrono::Utc::now() < warmup_start + chrono::Duration::seconds(10) {
-        let input = &inputs[0];
-        raw_solve(&solver, &input);
+    if warm_up {
+        println!("Warming up.");
+        let warmup_start = chrono::Utc::now();
+        while chrono::Utc::now() < warmup_start + chrono::Duration::seconds(10) {
+            let input = &inputs[0];
+            raw_solve(&solver, &input.1);
+        }
+        println!();
     }
-    println!();
 
-    for (i, input) in inputs.iter().enumerate() {
+    let mut results = vec![];
+
+    for (i, (input_string, input)) in inputs.iter().enumerate() {
         println!("Input {}.", BENCHMARK_SUITE[i]);
         let mut durations = vec![];
         for i in 0..NUM_RUNS {
@@ -206,15 +219,46 @@ fn benchmark(solver: String, file: Option<PathBuf>) {
             .into_iter()
             .map(|duration| duration.as_nanos())
             .collect_vec();
+        let mean = mean(&durations).unwrap();
+        let deviation = std_deviation(&durations).unwrap() / mean;
+        let min = *durations.iter().min().unwrap() as f32;
+        let max = *durations.iter().max().unwrap() as f32;
         println!(
-            "{} +- {} % nano seconds; {} - {} nano seconds",
-            mean(&durations).unwrap(),
-            std_deviation(&durations).unwrap() / mean(&durations).unwrap() * 100.0,
-            durations.iter().min().unwrap(),
-            durations.iter().max().unwrap(),
+            "{} +- {:.2} %; {} – {}",
+            format_duration(mean),
+            deviation * 100.0,
+            format_duration(min),
+            format_duration(max),
         );
         println!();
+
+        results.push((input_string, mean, deviation, min, max));
     }
+
+    println!("Summary:");
+    for (input, mean, deviation, min, max) in results {
+        println!(
+            "- {}: {} +- {:.2} %; {} - {}",
+            PathBuf::from(input)
+                .file_prefix()
+                .unwrap()
+                .to_str()
+                .unwrap(),
+            format_duration(mean),
+            deviation * 100.0,
+            format_duration(min),
+            format_duration(max)
+        );
+    }
+}
+fn format_duration(mut value: f32) -> String {
+    let units = ["ns", "us", "ms", "s"];
+    let mut magnitude = 0;
+    while value > 1000.0 && magnitude < units.len() - 1 {
+        magnitude += 1;
+        value /= 1000.0;
+    }
+    format!("{:.2} {}", value, units[magnitude])
 }
 fn mean(data: &[u128]) -> Option<f32> {
     let sum = data.iter().sum::<u128>() as f32;
@@ -258,8 +302,5 @@ fn read_kakuro(file: &PathBuf) -> Board {
         "The file {:?} doesn't contain a valid Kakuro.",
         file
     ));
-    println!("Whole board:");
-    println!("{}", board);
-    println!();
     board
 }
