@@ -110,6 +110,7 @@ The values are median with standard deviation, as well as minimum and maximum.
 
 - better hashmaps
 - better vecs
+- rename examples to kakuros
 - re-do benchmarks
 - investigate oom -> endless recursive loop?
 - invent new solvers
