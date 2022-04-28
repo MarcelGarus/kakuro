@@ -25,6 +25,7 @@ propagate_constraints    | 155.90 us |   1.34 ms |   8.05 ms |  37.12 ms | oom  
 solution_in_rc           |  61.72 us | 778.51 us |   6.57 ms |  33.40 ms | oom        | 193.86 ms  |
 simpler_recursion_anchor |  45.99 us | 681.29 us |   5.68 ms |  28.64 ms | oom        | 178.51 ms  |
 fxhashmap                |  39.12 us | 641.78 us |   5.35 ms |  27.49 ms | oom        | 142.74 ms  |
+better_vecs              |  34.61 us | 597.71 us |   5.75 ms |  32.85 ms | oom        |  88.97 ms  |
 
 ## Raw measurements
 
@@ -121,12 +122,16 @@ The values are median with standard deviation, as well as minimum and maximum.
   - 20x20: 27.49 ms +- 0.67 %; 27.20 ms – 27.81 ms
   - 30x30: oom
   - book: 142.74 ms +- 1.42 %; 140.26 ms – 146.90 ms
+- better_vecs
+  - small: 34.61 us +- 8.17 %; 31.95 us – 41.03 us
+  - wikipedia: 597.71 us +- 2.06 %; 585.46 us – 631.27 us
+  - 15x15: 5.75 ms +- 0.45 %; 5.73 ms – 5.80 ms
+  - 20x20: 32.85 ms +- 0.31 %; 32.75 ms – 33.04 ms
   - 30x30: oom
+  - book: 88.97 ms +- 1.18 %; 87.35 ms - 91.70 ms
 
 ## Todo
 
-- better hashmaps
-- better vecs
 - rename examples to kakuros
 - re-do benchmarks
 - investigate oom -> endless recursive loop?

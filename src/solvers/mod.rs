@@ -45,6 +45,7 @@
 //! - combine first by sum, only then by actual numbers
 //! - track the possibility wave like when solving by hand
 
+pub mod better_vecs;
 pub mod connecting_cells;
 pub mod divide;
 pub mod fxhashmap;

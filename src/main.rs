@@ -150,6 +150,7 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "solution_in_rc" => solvers::solution_in_rc::solve(&input),
         "simpler_recursion_anchor" => solvers::simpler_recursion_anchor::solve(&input),
         "fxhashmap" => solvers::fxhashmap::solve(&input),
+        "better_vecs" => solvers::better_vecs::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     }
 }
