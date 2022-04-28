@@ -23,6 +23,7 @@ connecting_cells      |  29.79 us | 833.63 us |   4.62 ms |  18.25 ms |  313.25 
 lazy                  |  46.41 us |   1.47 ms |   7.63 ms |  68.32 ms |   10.46 s  | oom        |
 propagate_constraints | 155.90 us |   1.34 ms |   8.05 ms |  37.12 ms | oom        |   1.12 s   |
 solution_in_rc        |  61.72 us | 778.51 us |   6.57 ms |  33.40 ms | oom        | 193.86 ms  |
+fxhashmap             |  50.35 us | 716.69 us |   5.67 ms |  28.19 ms | oom        | 145.95 ms  |
 
 ## Raw measurements
 
@@ -105,6 +106,13 @@ The values are median with standard deviation, as well as minimum and maximum.
   - 20x20: 33.40 ms +- 0.69 %; 33.12 ms – 33.77 ms
   - 30x30: oom
   - book: 193.86 ms +- 4.22 %; 186.47 ms - 210.47 ms
+- fxhashmap
+  - small: 50.35 us +- 9.39 %; 46.50 us – 61.53 us
+  - wikipedia: 716.69 us +- 2.34 %; 697.05 us – 754.06 us
+  - 15x15: 5.67 ms +- 1.04 %; 5.59 ms – 5.81 ms
+  - 20x20: 28.19 ms +- 1.16 %; 27.88 ms – 28.99 ms
+  - 30x30: oom
+  - book: 145.95 ms +- 2.13 %; 143.69 ms - 154.06 ms
 
 ## Todo
 

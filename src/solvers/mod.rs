@@ -38,6 +38,8 @@
 //! - solution_in_rc: Like propagate_constraints, but the quasi solutions are
 //!   wrapped in a reference counter. This allows common subtrees of quasi
 //!   solutions to share their memory, reducing allocations.
+//! - fxhashmap: Like solution_in_rc, but change usages of `HashMap` to
+//!   `FxHashMap` from the `rustc-hash` crate.
 //!
 //! Ideas:
 //! - combine first by sum, only then by actual numbers
@@ -45,6 +47,7 @@
 
 pub mod connecting_cells;
 pub mod divide;
+pub mod fxhashmap;
 pub mod gradual;
 pub mod lazy;
 pub mod naive;

@@ -148,6 +148,7 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "lazy" => solvers::lazy::solve(&input),
         "propagate_constraints" => solvers::propagate_constraints::solve(&input),
         "solution_in_rc" => solvers::solution_in_rc::solve(&input),
+        "fxhashmap" => solvers::fxhashmap::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     }
 }
