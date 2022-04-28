@@ -54,6 +54,7 @@ pub mod naive;
 pub mod only_check_changes;
 pub mod prioritize;
 pub mod propagate_constraints;
+pub mod simpler_recursion_anchor;
 pub mod solution_in_rc;
 pub mod sum_reachable;
 pub mod sum_reachable_no_set;

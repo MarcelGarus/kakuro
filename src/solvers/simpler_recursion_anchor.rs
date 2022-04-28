@@ -3,9 +3,9 @@ use crate::{
     log,
 };
 use itertools::Itertools;
-use rustc_hash::FxHashMap;
 use std::{
     cmp::{max, min},
+    collections::HashMap,
     fmt::{self, Display},
     rc::Rc,
 };
@@ -398,7 +398,7 @@ fn solve_rec(
     all_constraints: &[Constraint],
     connecting_constraints: &[Constraint],
     log_prefix: &str,
-) -> FxHashMap<Vec<Vec<Value>>, Rc<QuasiSolution>> {
+) -> HashMap<Vec<Vec<Value>>, Rc<QuasiSolution>> {
     log!(
         "{}Solving input with {} cells and {} constraints to pay attention to: {:?}",
         log_prefix,
@@ -413,7 +413,7 @@ fn solve_rec(
         debug_assert_eq!(num_cells, 1);
         let solutions = solve_one_cell(all_constraints);
         log!("{}Done. Found {} solutions.", log_prefix, solutions.len());
-        let mut grouped = FxHashMap::<Vec<Vec<Value>>, Rc<QuasiSolution>>::default();
+        let mut grouped = HashMap::<Vec<Vec<Value>>, Rc<QuasiSolution>>::new();
         for solution in solutions {
             let key = connecting_constraints
                 .iter()
@@ -546,7 +546,7 @@ fn solve_rec(
         }
     }
 
-    let mut grouped = FxHashMap::<Vec<Vec<Value>>, Rc<QuasiSolution>>::default();
+    let mut grouped = HashMap::<Vec<Vec<Value>>, Rc<QuasiSolution>>::new();
     for (key, solution) in solutions {
         grouped
             .entry(key)
