@@ -172,7 +172,7 @@ fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool) {
     ];
     const NUM_RUNS: usize = 10;
 
-    let (inputs) = if let Some(file) = file {
+    let inputs = if let Some(file) = file {
         vec![file]
     } else {
         BENCHMARK_SUITE
@@ -197,8 +197,8 @@ fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool) {
 
     let mut results = vec![];
 
-    for (i, (input_string, input)) in inputs.iter().enumerate() {
-        println!("Input {}.", BENCHMARK_SUITE[i]);
+    for (input_string, input) in &inputs {
+        println!("Input {}.", input_string);
         let mut durations = vec![];
         for i in 0..NUM_RUNS {
             print!(
