@@ -13,6 +13,9 @@
 //!   cell and then cells in rows and columns that already contain numbers.
 //! - sum_reachable_no_set: Like sum_reachable, but without using HashSets to
 //!   check for uniqueness.
+//! - only_check_changes: Like sum_reachable_no_set, but it doesn't check the
+//!   entire Kakuro after a digit was filled in. Instead, it only checks the
+//!   affected constraints.
 //! - divide: This solver divides a big Kakuro into two smaller ones that are
 //!   only connected with few constraints. All constraints except those
 //!   connecting both parts still apply. Both smaller Kakuros are solved in
@@ -32,9 +35,6 @@
 //!   the minimum/maximum sum that one part should have. For example, if a
 //!   connecting constraint with one cell in either part has a sum of 6, then
 //!   the values in each part can only be between 1 and 5.
-//! - only_check_changes: Like sum_reachable_no_set, but it doesn't check the
-//!   entire Kakuro after a digit was filled in. Instead, it only checks the
-//!   affected constraints.
 //! - solution_in_rc: Like propagate_constraints, but the quasi solutions are
 //!   wrapped in a reference counter. This allows common subtrees of quasi
 //!   solutions to share their memory, reducing allocations.

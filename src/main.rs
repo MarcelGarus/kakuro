@@ -142,11 +142,11 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "sum_reachable" => solvers::sum_reachable::solve(&input),
         "prioritize" => solvers::prioritize::solve(&input),
         "sum_reachable_no_set" => solvers::sum_reachable_no_set::solve(&input),
+        "only_check_changes" => solvers::only_check_changes::solve(&input),
         "divide" => solvers::divide::solve(&input),
         "connecting_cells" => solvers::connecting_cells::solve(&input),
         "lazy" => solvers::lazy::solve(&input),
         "propagate_constraints" => solvers::propagate_constraints::solve(&input),
-        "only_check_changes" => solvers::only_check_changes::solve(&input),
         "solution_in_rc" => solvers::solution_in_rc::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     }
