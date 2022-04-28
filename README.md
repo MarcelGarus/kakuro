@@ -7,6 +7,7 @@ This repo contains several solvers with different strategies.
 
 I conducted ten measurements for each value with prior warm-up.
 
+todo = Not measured yet  
 oom = Out of memory and killed by the operating system  
 timeout = Took longer than 30 minutes
 
