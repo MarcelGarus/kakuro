@@ -177,13 +177,13 @@ fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool, num_runs: usi
     debug_assert!(debug_warning());
 
     const BENCHMARK_SUITE: [&'static str; 7] = [
-        "examples/mini.kakuro",
-        "examples/small.kakuro",
-        "examples/wikipedia.kakuro",
-        "examples/15x15.kakuro",
-        "examples/20x20.kakuro",
-        "examples/30x30.kakuro",
-        "examples/book.kakuro",
+        "kakuros/mini.kakuro",
+        "kakuros/small.kakuro",
+        "kakuros/wikipedia.kakuro",
+        "kakuros/15x15.kakuro",
+        "kakuros/20x20.kakuro",
+        "kakuros/30x30.kakuro",
+        "kakuros/book.kakuro",
     ];
 
     let inputs = if let Some(file) = file {
