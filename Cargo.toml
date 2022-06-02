@@ -9,10 +9,12 @@ debug = true
 [dependencies]
 arrayvec = "0.7.2"
 chrono = "0.4"
+lazy_static = "1.4.0"
 itertools = "0.7.8"
 rand = "0.8.5"
 rustc-hash = "1.1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+smallvec = "1.8.0"
 structopt = "0.3.25"
 num-bigint = "0.4"

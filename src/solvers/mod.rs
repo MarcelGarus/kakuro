@@ -45,11 +45,14 @@
 //! - combine first by sum, only then by actual numbers
 //! - track the possibility wave like when solving by hand
 
+pub mod array_vec;
 pub mod better_vecs;
 pub mod connecting_cells;
 pub mod divide;
+pub mod earlier_anchor;
 pub mod fxhashmap;
 pub mod gradual;
+pub mod iterative;
 pub mod lazy;
 pub mod naive;
 pub mod only_check_changes;
@@ -59,3 +62,4 @@ pub mod simpler_recursion_anchor;
 pub mod solution_in_rc;
 pub mod sum_reachable;
 pub mod sum_reachable_no_set;
+pub mod sum_table;

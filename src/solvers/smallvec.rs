@@ -5,13 +5,27 @@ use crate::{
 use arrayvec::ArrayVec;
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
+use smallvec::smallvec;
 use std::{
     cmp::{max, min},
     fmt::{self, Display},
     rc::Rc,
 };
 
+const VEC_INLINE: usize = 3;
+
 type Vec9<T> = ArrayVec<T, 9>;
+type SmallVec<T> = smallvec::SmallVec<[T; VEC_INLINE]>;
+
+// benchmarking book:
+// - SmallVec size 20: 120.26 ms +- 1.38 %; 117.22 ms - 128.75 ms
+// - SmallVec size 10: 111.97 ms +- 1.01 %; 110.52 ms – 119.59 ms
+// - SmallVec size 5:  109.41 ms +- 0.96 %; 107.81 ms - 113.58 ms
+// - SmallVec size 4:  103.21 ms +- 1.16 %; 101.59 ms – 110.17 ms
+// - SmallVec size 3:  106.99 ms +- 0.53 %; 105.74 ms – 109.95 ms
+// - SmallVec size 2:  107.00 ms +- 1.19 %; 104.92 ms – 110.71 ms
+// - SmallVec size 1:  114.84 ms +- 1.67 %; 112.25 ms – 124.10 ms
+// - just using Vec:    95.51 ms +- 1.51 %; 92.98 ms – 104.47 ms
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Constraint {
@@ -47,15 +61,15 @@ impl Color {
 struct SplitInput {
     // The colors vector has the length of the original input and assigns each
     // cell a color.
-    colors: Vec<Color>,
+    colors: SmallVec<Color>,
 
     // A vector that maps cell indizes from the original input to the cell
     // indizes in the smaller parts.
-    index_mapping: Vec<usize>,
+    index_mapping: SmallVec<usize>,
 
-    red_constraints: Vec<Constraint>,
-    blue_constraints: Vec<Constraint>,
-    connections: Vec<Constraint>,
+    red_constraints: SmallVec<Constraint>,
+    blue_constraints: SmallVec<Constraint>,
+    connections: SmallVec<Constraint>,
 }
 impl SplitInput {
     fn flip(self) -> Self {
@@ -71,11 +85,11 @@ impl SplitInput {
 fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
     for num_connections in 0..constraints.len() {
         for connecting_constraints in constraints.iter().combinations(num_connections) {
-            let connecting_constraints: Vec<_> = connecting_constraints
+            let connecting_constraints: SmallVec<_> = connecting_constraints
                 .into_iter()
                 .map(|it| it.clone())
                 .collect();
-            let remaining_constraints: Vec<_> = constraints
+            let remaining_constraints: SmallVec<_> = constraints
                 .iter()
                 .filter(|it| !connecting_constraints.contains(it))
                 .map(|it| it.clone())
@@ -83,9 +97,9 @@ fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
 
             // Start with all cells blue, then flood fill from the first cell,
             // following constraints.
-            let mut colors: Vec<Color> = vec![Color::Blue; num_cells];
+            let mut colors: SmallVec<Color> = smallvec![Color::Blue; num_cells];
 
-            let mut dirty_queue: Vec<usize> = vec![0];
+            let mut dirty_queue: SmallVec<usize> = smallvec![0];
             while let Some(current) = dirty_queue.pop() {
                 colors[current] = Color::Red;
                 for constraint in &remaining_constraints {
@@ -110,7 +124,7 @@ fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
             let index_mapping = {
                 let mut red_counter = 0;
                 let mut blue_counter = 0;
-                let mut mapping: Vec<usize> = Default::default();
+                let mut mapping: SmallVec<usize> = Default::default();
                 for i in 0..num_cells {
                     match colors[i] {
                         Color::Red => {
@@ -131,7 +145,7 @@ fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
                 constraints: &[Constraint],
                 colors: &[Color],
                 mapping: &[usize],
-            ) -> Vec<Constraint> {
+            ) -> SmallVec<Constraint> {
                 constraints
                     .iter()
                     .map(|constraint| translate_constraint(constraint, color, &colors, &mapping))
@@ -167,10 +181,10 @@ fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
 
 #[derive(Debug, Clone)]
 enum QuasiSolution {
-    Concrete(Vec<Value>),
-    Plus(Vec<Rc<QuasiSolution>>),
+    Concrete(SmallVec<Value>),
+    Plus(SmallVec<Rc<QuasiSolution>>),
     Product {
-        colors: Vec<Color>,
+        colors: SmallVec<Color>,
         red: Rc<QuasiSolution>,
         blue: Rc<QuasiSolution>,
     },
@@ -187,7 +201,8 @@ impl QuasiSolution {
         match self {
             QuasiSolution::Concrete(concrete) => QuasiSolution::Concrete(concrete.clone()),
             QuasiSolution::Plus(children) => {
-                let mut children: Vec<_> = children.into_iter().map(|it| it.simplify()).collect();
+                let mut children: SmallVec<_> =
+                    children.into_iter().map(|it| it.simplify()).collect();
                 if children.len() == 1 {
                     children.pop().unwrap()
                 } else {
@@ -200,7 +215,7 @@ impl QuasiSolution {
                 if red.size() == 1 || blue.size() == 1 {
                     let mut red = red.build().pop().unwrap();
                     let mut blue = blue.build().pop().unwrap();
-                    let mut solution: Vec<Value> = Default::default();
+                    let mut solution: SmallVec<Value> = Default::default();
                     for color in colors {
                         solution.push(match color {
                             Color::Red => red.remove(0),
@@ -301,8 +316,8 @@ fn add_slices_to_vec9<T: Clone>(a: &[T], b: &[T]) -> Vec9<T> {
     }
     v
 }
-fn add_slices_to_small_vec<T: Clone>(a: &[T], b: &[T]) -> Vec<T> {
-    let mut v: Vec<T> = Default::default();
+fn add_slices_to_small_vec<T: Clone>(a: &[T], b: &[T]) -> SmallVec<T> {
+    let mut v: SmallVec<T> = Default::default();
     for t in a {
         v.push(t.clone());
     }
@@ -312,14 +327,14 @@ fn add_slices_to_small_vec<T: Clone>(a: &[T], b: &[T]) -> Vec<T> {
     v
 }
 
-pub fn solve_one_cell(constraints: &[Constraint]) -> Vec<Vec<Value>> {
+pub fn solve_one_cell(constraints: &[Constraint]) -> SmallVec<SmallVec<Value>> {
     let mut min_digit: Value = 1;
     let mut max_digit: Value = 9;
     for constraint in constraints {
         min_digit = max(constraint.min, min_digit);
         max_digit = min(constraint.max, max_digit);
     }
-    (min_digit..=max_digit).map(|it| vec![it]).collect()
+    (min_digit..=max_digit).map(|it| smallvec![it]).collect()
 }
 
 const MINS: [Value; 10] = [
@@ -382,13 +397,13 @@ fn translate_constraint(
 }
 
 pub fn solve(input: &game::Input) -> Output {
-    let constraints: Vec<Constraint> = input
+    let constraints: SmallVec<Constraint> = input
         .constraints
         .iter()
         .map(|it| it.clone().into())
         .collect();
     let mut solutions = solve_rec(input.num_cells, &constraints, &[], "");
-    let solutions = solutions.remove(&vec![]).unwrap();
+    let solutions = solutions.remove(&smallvec![]).unwrap();
     // log!("Solutions:\n{}", solutions));
     // log!("There are {} solutions.", solutions.size()));
     // log!("Simplified:"));
@@ -408,7 +423,7 @@ fn solve_rec(
     all_constraints: &[Constraint],
     connecting_constraints: &[Constraint],
     log_prefix: &str,
-) -> FxHashMap<Vec<Vec9<Value>>, Rc<QuasiSolution>> {
+) -> FxHashMap<SmallVec<Vec9<Value>>, Rc<QuasiSolution>> {
     log!(
         "{}Solving input with {} cells and {} constraints to pay attention to: {:?}",
         log_prefix,
@@ -423,7 +438,7 @@ fn solve_rec(
         debug_assert_eq!(num_cells, 1);
         let solutions = solve_one_cell(all_constraints);
         log!("{}Done. Found {} solutions.", log_prefix, solutions.len());
-        let mut grouped = FxHashMap::<Vec<Vec9<Value>>, Rc<QuasiSolution>>::default();
+        let mut grouped = FxHashMap::<SmallVec<Vec9<Value>>, Rc<QuasiSolution>>::default();
         for solution in solutions {
             let key = connecting_constraints
                 .iter()
@@ -437,7 +452,7 @@ fn solve_rec(
             grouped
                 .entry(key)
                 .and_modify(|existing_solution| {
-                    *existing_solution = Rc::new(QuasiSolution::Plus(vec![
+                    *existing_solution = Rc::new(QuasiSolution::Plus(smallvec![
                         Rc::new(QuasiSolution::Concrete(solution.clone())),
                         existing_solution.clone(),
                     ]));
@@ -468,8 +483,8 @@ fn solve_rec(
     } = split;
 
     // Mappings from part cell indizes to the cell indizes in the combined game.
-    let mut red_mapping: Vec<_> = Default::default();
-    let mut blue_mapping: Vec<_> = Default::default();
+    let mut red_mapping: SmallVec<_> = Default::default();
+    let mut blue_mapping: SmallVec<_> = Default::default();
     for i in 0..num_cells {
         match colors[i] {
             Color::Red => red_mapping.push(i),
@@ -487,7 +502,7 @@ fn solve_rec(
             .map(|constraint| {
                 translate_constraint(&constraint, Color::Red, &colors, &index_mapping)
             })
-            .collect::<Vec<_>>(),
+            .collect::<SmallVec<_>>(),
         &inner_log_prefix,
     );
     let blue_solutions = solve_rec(
@@ -498,7 +513,7 @@ fn solve_rec(
             .map(|constraint| {
                 translate_constraint(&constraint, Color::Blue, &colors, &index_mapping)
             })
-            .collect::<Vec<_>>(),
+            .collect::<SmallVec<_>>(),
         &inner_log_prefix,
     );
 
@@ -515,7 +530,7 @@ fn solve_rec(
         log_prefix,
         red_solutions.len() * blue_solutions.len()
     );
-    let mut solutions: Vec<(Vec<Vec9<Value>>, Rc<QuasiSolution>)> = Default::default();
+    let mut solutions: SmallVec<(SmallVec<Vec9<Value>>, Rc<QuasiSolution>)> = Default::default();
     for (red_connecting_values, red_solution) in &red_solutions {
         'solutions: for (blue_connecting_values, blue_solution) in &blue_solutions {
             for ((constraint, red_values), blue_values) in split_connecting_constraints
@@ -542,7 +557,7 @@ fn solve_rec(
                 red_connecting_values,
                 blue_connecting_values,
             );
-            let key: Vec<Vec9<Value>> = connecting_constraints
+            let key: SmallVec<Vec9<Value>> = connecting_constraints
                 .iter()
                 .zip(red_connecting_values)
                 .zip(blue_connecting_values)
@@ -557,12 +572,12 @@ fn solve_rec(
         }
     }
 
-    let mut grouped = FxHashMap::<Vec<Vec9<Value>>, Rc<QuasiSolution>>::default();
+    let mut grouped = FxHashMap::<SmallVec<Vec9<Value>>, Rc<QuasiSolution>>::default();
     for (key, solution) in solutions {
         grouped
             .entry(key)
             .and_modify(|existing_solution| {
-                *existing_solution = Rc::new(QuasiSolution::Plus(vec![
+                *existing_solution = Rc::new(QuasiSolution::Plus(smallvec![
                     solution.clone(),
                     existing_solution.clone(),
                 ]));

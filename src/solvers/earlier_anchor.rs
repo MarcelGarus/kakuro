@@ -6,7 +6,7 @@ use arrayvec::ArrayVec;
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use std::{
-    cmp::{max, min},
+    cmp::max,
     fmt::{self, Display},
     rc::Rc,
 };
@@ -69,7 +69,7 @@ impl SplitInput {
 }
 
 fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
-    for num_connections in 0..constraints.len() {
+    for num_connections in 0..2 {
         for connecting_constraints in constraints.iter().combinations(num_connections) {
             let connecting_constraints: Vec<_> = connecting_constraints
                 .into_iter()
@@ -100,9 +100,13 @@ fn split(num_cells: usize, constraints: &[Constraint]) -> Option<SplitInput> {
                 }
             }
 
-            if colors.iter().all(|color| *color == Color::Red) {
-                // The whole input was filled red, which means it was not split.
-                continue;
+            {
+                // Abort if this is a stupid split.
+                let num_red = colors.iter().filter(|color| **color == Color::Red).count();
+                let num_blue = colors.len() - num_red;
+                if num_red < 3 || num_blue < 3 {
+                    continue;
+                }
             }
 
             // A vector that maps cell indizes from the original input to the
@@ -312,14 +316,108 @@ fn add_slices_to_small_vec<T: Clone>(a: &[T], b: &[T]) -> Vec<T> {
     v
 }
 
-pub fn solve_one_cell(constraints: &[Constraint]) -> Vec<Vec<Value>> {
-    let mut min_digit: Value = 1;
-    let mut max_digit: Value = 9;
-    for constraint in constraints {
-        min_digit = max(constraint.min, min_digit);
-        max_digit = min(constraint.max, max_digit);
+mod simple_solver {
+    use super::*;
+
+    type Game = Vec<Cell>;
+    type Cell = Option<Value>;
+
+    trait ConstraintExt {
+        fn is_satisfied_by(&self, attempt: &Game) -> bool;
     }
-    (min_digit..=max_digit).map(|it| vec![it]).collect()
+    impl ConstraintExt for Constraint {
+        fn is_satisfied_by(&self, attempt: &Game) -> bool {
+            let cells = self.cells.iter().map(|b| attempt[*b]).collect_vec();
+            let digits = cells.into_iter().filter_map(|it| it).collect_vec();
+
+            let mut seen = [false; 9];
+            for digit in &digits {
+                if seen[(digit - 1) as usize] {
+                    return false; // A digit appears twice.
+                } else {
+                    seen[(digit - 1) as usize] = true;
+                }
+            }
+
+            let sum: Value = digits.iter().sum();
+            if sum == 0 {
+                return true; // No cells filled in yet.
+            }
+
+            let unused_digits = (1..=9u8)
+                .filter(|digit| !seen[(digit - 1) as usize])
+                .collect_vec();
+            let is_sum_reachable = unused_digits
+                .into_iter()
+                .combinations(self.cells.len() - digits.len())
+                .map(|additional_digits| sum + additional_digits.into_iter().sum::<Value>())
+                .any(|possible_sum| possible_sum >= self.min && possible_sum <= self.max);
+            return is_sum_reachable;
+        }
+    }
+
+    pub fn solve(num_cells: usize, constraints: &[Constraint]) -> Output {
+        let mut attempt = vec![None; num_cells];
+        let mut solutions = vec![];
+        let mut affected_constraints = FxHashMap::default();
+        for (i, constraint) in constraints.iter().enumerate() {
+            for cell in &constraint.cells {
+                affected_constraints.entry(*cell).or_insert(vec![]).push(i);
+            }
+        }
+        solve_rec(
+            num_cells,
+            constraints,
+            &affected_constraints,
+            &mut attempt,
+            &mut solutions,
+        );
+        solutions
+    }
+
+    fn solve_rec(
+        num_cells: usize,
+        constraints: &[Constraint],
+        affected_constraints: &FxHashMap<usize, Vec<usize>>,
+        attempt: &mut Game,
+        solutions: &mut Vec<Solution>,
+    ) {
+        log!(
+            "Evaluating attempt {}",
+            attempt
+                .iter()
+                .map(|cell| {
+                    match cell {
+                        Some(digit) => format!("{}", digit),
+                        None => "-".to_string(),
+                    }
+                })
+                .join("")
+        );
+
+        let first_empty_cell_index = attempt.iter().position(|it| it.is_none());
+        if let Some(index) = first_empty_cell_index {
+            'candidates: for i in 1..=9 {
+                attempt[index] = Some(i);
+                for constraint_index in &affected_constraints[&index] {
+                    let constraint = &constraints[*constraint_index];
+                    if !constraint.is_satisfied_by(attempt) {
+                        continue 'candidates;
+                    }
+                }
+                solve_rec(
+                    num_cells,
+                    constraints,
+                    affected_constraints,
+                    attempt,
+                    solutions,
+                );
+            }
+            attempt[index] = None;
+        } else {
+            solutions.push(attempt.iter().map(|cell| cell.unwrap()).collect());
+        }
+    }
 }
 
 const MINS: [Value; 10] = [
@@ -421,7 +519,7 @@ fn solve_rec(
     if split.is_none() {
         log!("{}Solving with simple algorithm.", log_prefix);
         debug_assert_eq!(num_cells, 1);
-        let solutions = solve_one_cell(all_constraints);
+        let solutions = simple_solver::solve(num_cells, all_constraints);
         log!("{}Done. Found {} solutions.", log_prefix, solutions.len());
         let mut grouped = FxHashMap::<Vec<Vec9<Value>>, Rc<QuasiSolution>>::default();
         for solution in solutions {

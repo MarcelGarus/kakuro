@@ -1,4 +1,8 @@
 #![feature(path_file_prefix)]
+#![feature(const_for)]
+
+#[macro_use]
+extern crate lazy_static;
 
 mod board;
 mod game;
@@ -53,6 +57,9 @@ enum KakuroOptions {
 
         #[structopt(long)]
         warm_up: bool,
+
+        #[structopt(long)]
+        num_runs: Option<usize>,
     },
     /// Converts a Kakuro to an SVG.
     Svg {
@@ -78,7 +85,8 @@ fn main() {
             solver,
             file,
             warm_up,
-        } => benchmark(solver, file, warm_up),
+            num_runs,
+        } => benchmark(solver, file, warm_up, num_runs.unwrap_or(10)),
         KakuroOptions::Svg { file, out } => svg(&file, &out),
     }
 }
@@ -107,11 +115,11 @@ fn import(file: PathBuf) {
 
 fn solve(solver: String, file: PathBuf) {
     let input = read_kakuro(&file).to_input();
-    println!("Input board abstracted to this:");
-    println!("{}", input);
-    println!();
+    // println!("Input board abstracted to this:");
+    // println!("{}", input);
+    // println!();
 
-    println!("Solving.");
+    println!("Solving Kakuro.");
     let solutions = raw_solve(&solver, &input);
     println!("Done.");
     println!();
@@ -151,11 +159,15 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "simpler_recursion_anchor" => solvers::simpler_recursion_anchor::solve(&input),
         "fxhashmap" => solvers::fxhashmap::solve(&input),
         "better_vecs" => solvers::better_vecs::solve(&input),
+        "earlier_anchor" => solvers::earlier_anchor::solve(&input),
+        "iterative" => solvers::iterative::solve(&input),
+        "array_vec" => solvers::array_vec::solve(&input),
+        "sum_table" => solvers::sum_table::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     }
 }
 
-fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool) {
+fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool, num_runs: usize) {
     fn debug_warning() -> bool {
         println!("WARNING: You are running this binary in debug mode.");
         println!("Compile with `cargo build --release` to get a binary actually worth measuring.");
@@ -173,7 +185,6 @@ fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool) {
         "examples/30x30.kakuro",
         "examples/book.kakuro",
     ];
-    const NUM_RUNS: usize = 10;
 
     let inputs = if let Some(file) = file {
         vec![file]
@@ -203,11 +214,11 @@ fn benchmark(solver: String, file: Option<PathBuf>, warm_up: bool) {
     for (input_string, input) in &inputs {
         println!("Input {}.", input_string);
         let mut durations = vec![];
-        for i in 0..NUM_RUNS {
+        for i in 0..num_runs {
             print!(
                 "Solving run {}/{} started at {}.",
                 i,
-                NUM_RUNS,
+                num_runs,
                 chrono::Local::now()
             );
             std::io::stdout().flush().expect("Couldn't flush stdout.");
