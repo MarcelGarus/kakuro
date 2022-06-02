@@ -11,22 +11,22 @@ todo = Not measured yet
 oom = Out of memory and killed by the operating system  
 timeout = Took longer than 30 minutes
 
-solver                   | small     | wikipedia | 15x15     | 20x20     | 30x30      | book       |
--------------------------|-----------|-----------|-----------|-----------|------------|------------|
-naive                    | todo      | todo      | todo      | todo      | todo       | todo       |
-gradual                  | todo      | todo      | todo      | todo      | todo       | todo       |
-sum_reachable            | todo      | todo      | todo      | todo      | todo       | todo       |
-prioritize               |   1.23 ms | 376.48 ms | 466.87 ms | 364.07 s  | timeout    | todo       |
-sum_reachable_no_set     | 335.41 us |   5.12 ms |  20.43 ms | 208.78 ms |   14.06 s  |  20.56 s   |
-only_check_changes       | 170.99 us | 792.26 us |   2.18 ms |   9.70 ms |  595.41 ms |   1.41 s   |
-divide                   |  23.48 us |   1.55 ms |   8.13 ms | 143.76 ms |    6.24 s  | oom        |
-connecting_cells         |  29.79 us | 833.63 us |   4.62 ms |  18.25 ms |  313.25 ms | oom        |
-lazy                     |  46.41 us |   1.47 ms |   7.63 ms |  68.32 ms |   10.46 s  | oom        |
-propagate_constraints    | 155.90 us |   1.34 ms |   8.05 ms |  37.12 ms | oom        |   1.12 s   |
-solution_in_rc           |  61.72 us | 778.51 us |   6.57 ms |  33.40 ms | oom        | 193.86 ms  |
-simpler_recursion_anchor |  45.99 us | 681.29 us |   5.68 ms |  28.64 ms | oom        | 178.51 ms  |
-fxhashmap                |  39.12 us | 641.78 us |   5.35 ms |  27.49 ms | oom        | 142.74 ms  |
-better_vecs              |  34.61 us | 597.71 us |   5.75 ms |  32.85 ms | oom        |  88.97 ms  |
+| solver                   | small     | wikipedia | 15x15     | 20x20     | 30x30     | book      |
+| ------------------------ | --------- | --------- | --------- | --------- | --------- | --------- |
+| naive                    | todo      | todo      | todo      | todo      | todo      | todo      |
+| gradual                  | todo      | todo      | todo      | todo      | todo      | todo      |
+| sum_reachable            | todo      | todo      | todo      | todo      | todo      | todo      |
+| prioritize               | 1.23 ms   | 376.48 ms | 466.87 ms | 364.07 s  | timeout   | todo      |
+| sum_reachable_no_set     | 335.41 us | 5.12 ms   | 20.43 ms  | 208.78 ms | 14.06 s   | 20.56 s   |
+| only_check_changes       | 170.99 us | 792.26 us | 2.18 ms   | 9.70 ms   | 595.41 ms | 1.41 s    |
+| divide                   | 23.48 us  | 1.55 ms   | 8.13 ms   | 143.76 ms | 6.24 s    | oom       |
+| connecting_cells         | 29.79 us  | 833.63 us | 4.62 ms   | 18.25 ms  | 313.25 ms | oom       |
+| lazy                     | 46.41 us  | 1.47 ms   | 7.63 ms   | 68.32 ms  | 10.46 s   | oom       |
+| propagate_constraints    | 155.90 us | 1.34 ms   | 8.05 ms   | 37.12 ms  | oom       | 1.12 s    |
+| solution_in_rc           | 61.72 us  | 778.51 us | 6.57 ms   | 33.40 ms  | oom       | 193.86 ms |
+| simpler_recursion_anchor | 45.99 us  | 681.29 us | 5.68 ms   | 28.64 ms  | oom       | 178.51 ms |
+| fxhashmap                | 39.12 us  | 641.78 us | 5.35 ms   | 27.49 ms  | oom       | 142.74 ms |
+| better_vecs              | 34.61 us  | 597.71 us | 5.75 ms   | 32.85 ms  | oom       | 88.97 ms  |
 
 ## Raw measurements
 
@@ -133,7 +133,6 @@ The values are median with standard deviation, as well as minimum and maximum.
 
 ## Todo
 
-- rename examples to kakuros
 - re-do benchmarks
 - investigate oom -> endless recursive loop?
 - invent new solvers

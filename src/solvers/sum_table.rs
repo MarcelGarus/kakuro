@@ -22,15 +22,9 @@ impl ConstraintExt for Constraint {
             if used_digits_bitmask & (1 << (digit - 1)) == 1 {
                 return false; // A digit appears twice.
             } else {
-                eprintln!("Oring digits with {}", 1 << (digit - 1));
                 used_digits_bitmask |= 1 << (digit - 1);
-                eprintln!("Now they are {}", used_digits_bitmask);
             }
         }
-
-        dbg!(&self.cells);
-        dbg!(&digits);
-        dbg!(&used_digits_bitmask);
 
         return is_sum_reachable(
             used_digits_bitmask,
@@ -67,15 +61,12 @@ fn solve_rec(
     if let Some(index) = first_empty_cell_index {
         'candidates: for i in 1..=9 {
             attempt[index] = Some(i);
-            print!("Trying out more of {}? ", format_game(attempt));
             for constraint_index in &affected_constraints[&index] {
                 let constraint = &input.constraints[*constraint_index];
                 if !constraint.is_satisfied_by(attempt) {
-                    println!("Nope, failing constraint {:?}!", constraint);
                     continue 'candidates;
                 }
             }
-            println!("Yes!");
             solve_rec(input, affected_constraints, attempt, solutions);
         }
         attempt[index] = None;
@@ -108,6 +99,7 @@ lazy_static! {
 }
 
 fn calculate_sum_table() -> [[[bool; 46]; 10]; 1 << 9] {
+    log!("Calculating sum table.");
     let mut table = [[[false; 46]; 10]; 1 << 9];
 
     for existing_digits_bitmask in 0b000_000_000_u16..=0b111_111_111_u16 {
@@ -134,8 +126,8 @@ fn calculate_sum_table() -> [[[bool; 46]; 10]; 1 << 9] {
                 })
                 .collect_vec();
 
-            println!("With {:b} in use ({:?}, sum {}) and {} more to fill in ({} out of {:?}), we can reach ({:?})",
-                existing_digits_bitmask, existing_digits, existing_sum, num_additional_digits, num_additional_digits, unused_digits, reachable_sums);
+            // log!("With {:b} in use ({:?}, sum {}) and {} more to fill in ({} out of {:?}), we can reach ({:?})",
+            //     existing_digits_bitmask, existing_digits, existing_sum, num_additional_digits, num_additional_digits, unused_digits, reachable_sums);
             for target_sum in 0..=45 {
                 let is_reachable = reachable_sums.contains(&target_sum);
                 table[existing_digits_bitmask as usize][num_additional_digits]
@@ -144,6 +136,7 @@ fn calculate_sum_table() -> [[[bool; 46]; 10]; 1 << 9] {
         }
     }
 
+    log!("Sum table calculated.");
     table
 }
 
