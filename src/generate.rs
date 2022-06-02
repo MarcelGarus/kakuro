@@ -78,7 +78,9 @@ pub fn generate(width: usize, height: usize, numbers: usize) -> board::Board {
     let mut rand = rand::thread_rng();
     let mut tries: usize = 0;
     fn num_values(board: &[Vec<Cell>]) -> usize {
-        Itertools::flatten(board.iter())
+        board
+            .iter()
+            .flatten()
             .filter(|cell| matches!(cell, Cell::Value(_)))
             .count()
     }

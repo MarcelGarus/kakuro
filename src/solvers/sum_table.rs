@@ -17,46 +17,32 @@ impl ConstraintExt for Constraint {
         let cells: ArrayVec<Option<Value>, 9> = self.cells.iter().map(|b| attempt[*b]).collect();
         let digits: ArrayVec<Value, 9> = cells.into_iter().filter_map(|it| it).collect();
 
-        let mut seen = [false; 9];
+        let mut used_digits_bitmask = 0u16;
         for digit in &digits {
-            if seen[(digit - 1) as usize] {
+            if used_digits_bitmask & (1 << (digit - 1)) == 1 {
                 return false; // A digit appears twice.
             } else {
-                seen[(digit - 1) as usize] = true;
+                eprintln!("Oring digits with {}", 1 << (digit - 1));
+                used_digits_bitmask |= 1 << (digit - 1);
+                eprintln!("Now they are {}", used_digits_bitmask);
             }
         }
 
-        let sum: Value = digits.iter().sum();
-        if sum == 0 {
-            return true; // No cells filled in yet.
-        }
+        dbg!(&self.cells);
+        dbg!(&digits);
+        dbg!(&used_digits_bitmask);
 
-        let mut unused_digits = 0u16;
-        for i in 0..9 {
-            if seen[i] {
-                unused_digits &= 1 << i;
-            }
-        }
-        log!(
-            "Checking if any combination of {:?} with length {} plus existing sum {} yields total sum {}.",
-            unused_digits,
+        return is_sum_reachable(
+            used_digits_bitmask,
             self.cells.len() - digits.len(),
-            sum,
-            self.sum
+            self.sum,
         );
-        if sum > self.sum {
-            return false;
-        } else {
-            return is_sum_reachable(
-                self.cells.len() - digits.len(),
-                unused_digits,
-                self.sum - sum,
-            );
-        }
     }
 }
 
 pub fn solve(input: &Input) -> Output {
+    init_sum_table();
+
     let mut attempt = vec![None; input.num_cells];
     let mut solutions = vec![];
     let mut affected_constraints = HashMap::new();
@@ -75,29 +61,21 @@ fn solve_rec(
     attempt: &mut Game,
     solutions: &mut Vec<Solution>,
 ) {
-    log!(
-        "Evaluating attempt {}",
-        attempt
-            .iter()
-            .map(|cell| {
-                match cell {
-                    Some(digit) => format!("{}", digit),
-                    None => "-".to_string(),
-                }
-            })
-            .join("")
-    );
+    log!("Evaluating attempt {}", format_game(attempt));
 
     let first_empty_cell_index = attempt.iter().position(|it| it.is_none());
     if let Some(index) = first_empty_cell_index {
         'candidates: for i in 1..=9 {
             attempt[index] = Some(i);
+            print!("Trying out more of {}? ", format_game(attempt));
             for constraint_index in &affected_constraints[&index] {
                 let constraint = &input.constraints[*constraint_index];
                 if !constraint.is_satisfied_by(attempt) {
+                    println!("Nope, failing constraint {:?}!", constraint);
                     continue 'candidates;
                 }
             }
+            println!("Yes!");
             solve_rec(input, affected_constraints, attempt, solutions);
         }
         attempt[index] = None;
@@ -109,65 +87,71 @@ fn solve_rec(
 // A lookup table where you can look up the total number of digits as well as
 // the existing digits to find the minimum and maximum reachable sum.
 
-fn is_sum_reachable(num_total_digits: usize, existing_digits: u16, sum: u8) -> bool {
-    SUM_TABLE[num_total_digits][existing_digits as usize] & 1u64 << sum != 0
+fn init_sum_table() {
+    SUM_TABLE[0][0][0];
+}
+
+fn is_sum_reachable(
+    existing_digits_bitmask: u16,
+    num_additional_digits: usize,
+    sum: Value,
+) -> bool {
+    SUM_TABLE[existing_digits_bitmask as usize][num_additional_digits][sum as usize]
 }
 
 lazy_static! {
-    static ref SUM_TABLE: [[u64; 1 << 9]; 10] = calculate_sum_table();
+    // first, outer array: which digits have already been used
+    // second array: how many digits still need to be filled in
+    // third, inner array: the total sum to reach
+    // value: whether the sum is reachable
+    static ref SUM_TABLE: [[[bool; 46]; 10]; 1 << 9] = calculate_sum_table();
 }
 
-fn calculate_sum_table() -> [[u64; 1 << 9]; 10] {
-    let mut table = [[0; 1 << 9]; 10];
+fn calculate_sum_table() -> [[[bool; 46]; 10]; 1 << 9] {
+    let mut table = [[[false; 46]; 10]; 1 << 9];
 
-    for total_digits in 0..=9 {
-        for digits in 0b000_000_000..=0b111_111_111 {
-            let mut reachable_sums = [false; 46];
-            fill_reachable_sums(
-                digits,
-                (total_digits - digits.count_ones()) as u8,
-                &mut reachable_sums,
-            );
-            let mut reachable = 0u64;
-            for (i, is_reachable) in reachable_sums.into_iter().enumerate() {
-                if *is_reachable {
-                    reachable |= 1 << i;
+    for existing_digits_bitmask in 0b000_000_000_u16..=0b111_111_111_u16 {
+        let existing_digits = (0u8..9)
+            .filter_map(|i| {
+                if existing_digits_bitmask & (1 << i as u16) == 0 {
+                    None
+                } else {
+                    Some(i + 1)
                 }
+            })
+            .collect_vec();
+        let existing_sum: Value = existing_digits.iter().sum();
+
+        for num_additional_digits in 0..=(9 - existing_digits.len()) {
+            let unused_digits = (1u8..=9)
+                .filter(|it| !existing_digits.contains(it))
+                .collect_vec();
+            let reachable_sums = unused_digits
+                .iter()
+                .combinations(num_additional_digits)
+                .map(|additional_digits| {
+                    existing_sum + additional_digits.into_iter().sum::<Value>()
+                })
+                .collect_vec();
+
+            println!("With {:b} in use ({:?}, sum {}) and {} more to fill in ({} out of {:?}), we can reach ({:?})",
+                existing_digits_bitmask, existing_digits, existing_sum, num_additional_digits, num_additional_digits, unused_digits, reachable_sums);
+            for target_sum in 0..=45 {
+                let is_reachable = reachable_sums.contains(&target_sum);
+                table[existing_digits_bitmask as usize][num_additional_digits]
+                    [target_sum as usize] = is_reachable;
             }
-            table[total_digits as usize][digits as usize] = reachable;
         }
     }
 
     table
 }
-fn fill_reachable_sums(unused_digits: u16, num_to_use: u8, reachable_sums: &mut [bool; 46]) {
-    fill_reachable_sums_rec(unused_digits, num_to_use, 0, reachable_sums);
-}
-fn fill_reachable_sums_rec(
-    unused_digits: u16,
-    num_to_use: u8,
-    sum_so_far: u8,
-    reachable_sums: &mut [bool; 46],
-) {
-    println!("unused digits: {:b}", &unused_digits);
-    println!("num to use:    {}", &num_to_use);
-    println!("sum so far:    {}", &sum_so_far);
-    println!("reachables:    {:?}", &reachable_sums);
 
-    if num_to_use == 0 {
-        reachable_sums[sum_so_far as usize] = true;
-        return;
-    }
-    for (digit, mask) in (0..9).map(|it| (it as u8 + 1, 1 << it)) {
-        if unused_digits & mask != 1 {
-            continue;
-        }
-        let inner_unused_digits = unused_digits & ((1 << digit) - 1);
-        fill_reachable_sums_rec(
-            inner_unused_digits,
-            num_to_use - 1,
-            sum_so_far + digit,
-            reachable_sums,
-        );
-    }
+fn format_game(game: &Game) -> String {
+    game.iter()
+        .map(|cell| match cell {
+            Some(digit) => format!("{}", digit),
+            None => "-".to_string(),
+        })
+        .join("")
 }
