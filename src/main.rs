@@ -151,6 +151,7 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "prioritize" => solvers::prioritize::solve(&input),
         "sum_reachable_no_set" => solvers::sum_reachable_no_set::solve(&input),
         "only_check_changes" => solvers::only_check_changes::solve(&input),
+        "pass_empty_index" => solvers::pass_empty_index::solve(&input),
         "divide" => solvers::divide::solve(&input),
         "connecting_cells" => solvers::connecting_cells::solve(&input),
         "lazy" => solvers::lazy::solve(&input),

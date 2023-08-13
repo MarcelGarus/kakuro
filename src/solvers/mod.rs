@@ -63,3 +63,4 @@ pub mod solution_in_rc;
 pub mod sum_reachable;
 pub mod sum_reachable_no_set;
 pub mod sum_table;
+pub mod pass_empty_index;
