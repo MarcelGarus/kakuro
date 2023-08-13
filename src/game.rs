@@ -136,7 +136,7 @@ impl Input {
 impl Constraint {
     pub fn is_solution(&self, solution: &Solution) -> bool {
         let digits = self.cells.iter().map(|i| solution[*i]).collect_vec();
-        let unique_digits = digits.iter().collect::<HashSet<_>>();
+        let unique_digits = digits.iter().copied().collect::<HashSet<_>>();
 
         if unique_digits.len() < digits.len() {
             false // A digit appears twice.

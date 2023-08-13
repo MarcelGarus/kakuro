@@ -17,7 +17,7 @@ impl ConstraintExt2 for Constraint {
     fn is_possible_solution(&self, attempt: &[Option<Value>]) -> bool {
         let cells = self.cells.iter().map(|i| attempt[*i]).collect_vec();
         let digits = cells.into_iter().filter_map(|it| it).collect_vec();
-        let unique_digits = digits.clone().into_iter().collect::<HashSet<_>>();
+        let unique_digits = digits.iter().copied().collect::<HashSet<_>>();
 
         if unique_digits.len() < digits.len() {
             return false; // A digit appears twice.
