@@ -1,48 +1,46 @@
 use crate::{
-    game::{Input, Output, Solution, Value},
+    game::{Input, Output, Solution, Value, Constraint},
     log,
 };
+use extension_trait::extension_trait;
 use itertools::Itertools;
 
-type Game = Vec<Cell>;
-type Cell = Option<Value>;
 
-trait InputExt {
-    fn is_possible_solution(&self, attempt: &Game) -> bool;
+#[extension_trait]
+impl InputExt3 for Input {
+    fn is_possible_solution(&self, attempt: &[Option<Value>]) -> bool {
+        self.constraints.iter().all(|constraint| constraint.is_possible_solution(attempt))
+    }
 }
-impl InputExt for Input {
-    fn is_possible_solution(&self, attempt: &Game) -> bool {
-        for constraint in self.constraints.iter() {
-            let cells = constraint.cells.iter().map(|b| attempt[*b]).collect_vec();
-            let digits = cells.into_iter().filter_map(|it| it).collect_vec();
+#[extension_trait]
+impl ConstraintExt3 for Constraint {
+    fn is_possible_solution(&self, attempt: &[Option<Value>]) -> bool {
+        let cells = self.cells.iter().map(|b| attempt[*b]).collect_vec();
+        let digits = cells.into_iter().filter_map(|it| it).collect_vec();
 
-            let mut seen = [false; 9];
-            for digit in &digits {
-                if seen[(digit - 1) as usize] {
-                    return false; // A digit appears twice.
-                } else {
-                    seen[(digit - 1) as usize] = true;
-                }
-            }
-
-            let sum: Value = digits.iter().sum();
-            if sum == 0 {
-                continue; // No cells filled in yet.
-            }
-
-            let unused_digits = (1..=9u8)
-                .filter(|digit| !seen[(digit - 1) as usize])
-                .collect_vec();
-            let is_sum_reachable = unused_digits
-                .into_iter()
-                .combinations(constraint.cells.len() - digits.len())
-                .map(|additional_digits| sum + additional_digits.into_iter().sum::<Value>())
-                .any(|possible_sum| possible_sum == constraint.sum);
-            if !is_sum_reachable {
-                return false;
+        let mut seen = [false; 9];
+        for digit in &digits {
+            if seen[(digit - 1) as usize] {
+                return false; // A digit appears twice.
+            } else {
+                seen[(digit - 1) as usize] = true;
             }
         }
-        return true;
+
+        let sum: Value = digits.iter().sum();
+        if sum == 0 {
+            return true; // No cells filled in yet.
+        }
+
+        let unused_digits = (1..=9u8)
+            .filter(|digit| !seen[(digit - 1) as usize])
+            .collect_vec();
+        let is_sum_reachable = unused_digits
+            .into_iter()
+            .combinations(self.cells.len() - digits.len())
+            .map(|additional_digits| sum + additional_digits.into_iter().sum::<Value>())
+            .any(|possible_sum| possible_sum == self.sum);
+        is_sum_reachable
     }
 }
 
@@ -53,7 +51,7 @@ pub fn solve(input: &Input) -> Output {
     solutions
 }
 
-fn solve_rec(input: &Input, attempt: &mut Game, solutions: &mut Vec<Solution>) {
+fn solve_rec(input: &Input, attempt: &mut Vec<Option<Value>>, solutions: &mut Vec<Solution>) {
     log!(
         "Evaluating attempt {}",
         attempt

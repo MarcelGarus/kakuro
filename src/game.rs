@@ -124,26 +124,24 @@ impl Board {
 }
 
 impl Input {
-    pub fn is_solution(&self, attempt: &Solution) -> bool {
-        if attempt.len() != self.num_cells {
-            return false;
-        }
-        if !attempt.iter().all(|number| (1..=9).contains(number)) {
-            return false;
-        }
+    pub fn is_solution(&self, solution: &Solution) -> bool {
+        solution.len() == self.num_cells
+            && solution.iter().all(|number| (1..=9).contains(number))
+            && self
+                .constraints
+                .iter()
+                .all(|constraint| constraint.is_solution(solution))
+    }
+}
+impl Constraint {
+    pub fn is_solution(&self, solution: &Solution) -> bool {
+        let digits = self.cells.iter().map(|i| solution[*i]).collect_vec();
+        let unique_digits = digits.iter().collect::<HashSet<_>>();
 
-        for constraint in self.constraints.iter() {
-            let digits = constraint.cells.iter().map(|i| attempt[*i]).collect_vec();
-            let unique_digits = digits.iter().collect::<HashSet<_>>();
-
-            if unique_digits.len() < digits.len() {
-                return false; // A digit appears twice.
-            } else if digits.len() < constraint.cells.len() {
-                continue; // Ignore partially filled out constraints.
-            } else if digits.iter().sum::<Value>() != constraint.sum {
-                return false;
-            }
+        if unique_digits.len() < digits.len() {
+            false // A digit appears twice.
+        } else {
+            digits.iter().sum::<Value>() == self.sum
         }
-        return true;
     }
 }

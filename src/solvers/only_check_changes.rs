@@ -2,17 +2,12 @@ use crate::{
     game::{Constraint, Input, Output, Solution, Value},
     log,
 };
+use extension_trait::extension_trait;
 use itertools::Itertools;
-use std::collections::HashMap;
 
-type Game = Vec<Cell>;
-type Cell = Option<Value>;
-
-trait ConstraintExt {
-    fn is_satisfied_by(&self, attempt: &Game) -> bool;
-}
-impl ConstraintExt for Constraint {
-    fn is_satisfied_by(&self, attempt: &Game) -> bool {
+#[extension_trait]
+impl ConstraintExt4 for Constraint {
+    fn is_satisfied_by(&self, attempt: &Vec<Option<Value>>) -> bool {
         let cells = self.cells.iter().map(|b| attempt[*b]).collect_vec();
         let digits = cells.into_iter().filter_map(|it| it).collect_vec();
 
@@ -45,10 +40,10 @@ impl ConstraintExt for Constraint {
 pub fn solve(input: &Input) -> Output {
     let mut attempt = vec![None; input.num_cells];
     let mut solutions = vec![];
-    let mut affected_constraints = HashMap::new();
+    let mut affected_constraints = vec![vec![]; input.num_cells];
     for (i, constraint) in input.constraints.iter().enumerate() {
         for cell in &constraint.cells {
-            affected_constraints.entry(*cell).or_insert(vec![]).push(i);
+            affected_constraints[*cell].push(i);
         }
     }
     solve_rec(input, &affected_constraints, &mut attempt, &mut solutions);
@@ -57,8 +52,8 @@ pub fn solve(input: &Input) -> Output {
 
 fn solve_rec(
     input: &Input,
-    affected_constraints: &HashMap<usize, Vec<usize>>,
-    attempt: &mut Game,
+    affected_constraints: &[Vec<usize>],
+    attempt: &mut Vec<Option<Value>>,
     solutions: &mut Vec<Solution>,
 ) {
     log!(
@@ -78,7 +73,7 @@ fn solve_rec(
     if let Some(index) = first_empty_cell_index {
         'candidates: for i in 1..=9 {
             attempt[index] = Some(i);
-            for constraint_index in &affected_constraints[&index] {
+            for constraint_index in &affected_constraints[index] {
                 let constraint = &input.constraints[*constraint_index];
                 if !constraint.is_satisfied_by(attempt) {
                     continue 'candidates;

@@ -150,14 +150,6 @@ fn is_sum_reachable(digits_left: &mut [bool; 9], allowed_to_use: usize, sum: i8)
     return false;
 }
 
-fn combinations(values: ArrayVec<Value, 9>, n: usize) -> Combinations {
-    Combinations {
-        values,
-        n: n.try_into().unwrap(),
-        mask: 0,
-    }
-}
-
 pub struct Combinations {
     values: ArrayVec<Value, 9>,
     n: u32,
