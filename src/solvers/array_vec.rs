@@ -4,7 +4,7 @@ use crate::{
 };
 use arrayvec::ArrayVec;
 use itertools::Itertools;
-use std::{collections::HashMap, convert::TryInto};
+use std::collections::HashMap;
 
 type Game = Vec<Cell>;
 type Cell = Option<Value>;

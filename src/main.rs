@@ -164,6 +164,7 @@ fn raw_solve(solver: &str, input: &Input) -> Vec<Vec<u8>> {
         "iterative" => solvers::iterative::solve(&input),
         "array_vec" => solvers::array_vec::solve(&input),
         "sum_table" => solvers::sum_table::solve(&input),
+        "no_alloc" => solvers::no_alloc::solve(&input),
         _ => panic!("Unknown solver {}.", solver),
     }
 }
