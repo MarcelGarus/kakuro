@@ -1,4 +1,4 @@
-pub const LOGGING: bool = true;
+pub const LOGGING: bool = false;
 
 #[macro_export]
 macro_rules! log {
